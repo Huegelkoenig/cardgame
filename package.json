@@ -1,0 +1,27 @@
+{
+  "name": "cardgame",
+  "version": "0.1.0",
+  "description": "A simple pvp cardgame created with Javascript, node.js and socket.io",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "node.js"
+  ],
+  "author": "Huegelkoenig",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Huegelkoenig/cardgame.git"
+  },
+  "homepage": "https://github.com/Huegelkoenig/cardgame#readme",
+  "bugs": {
+    "url": "https://github.com/Huegelkoenig/cardgame/issues"
+  },
+  "nodeversion": {
+    "npm": "6.13.7",
+    "node": "v13.11.0"
+  }
+}
