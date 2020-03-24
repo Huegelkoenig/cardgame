@@ -123,7 +123,7 @@ function newSprite(img, origin){
   if (!img.complete){
     throw Error(`class_sprite.js: function newSprite: ${img} isn't fully preloaded (or not even an image)`)
   }
-  if (!Number.isInteger(origin.x) || !Number.isInteger(origin.y) || !Number.isInteger(origin.width) || !Number.isInteger(origin.height) || !(origin.x>=0) || !(origin.x<img.width)|| !(origin.x+origin.width<=img.width) || !(origin.y>=0)  || !(origin.y<img.height || !(origin.y+origin.height<=img.height))){
+  if (!Number.isInteger(origin.x) || !Number.isInteger(origin.y) || !Number.isInteger(origin.width) || !Number.isInteger(origin.height) || !(origin.x>=0) || !(origin.x<img.width)|| !(origin.x+origin.width<=img.width) || !(origin.y>=0)  || !(origin.y<img.height) || !(origin.y+origin.height<=img.height)){
       throw Error(`class_sprite.js: function newSprite: Sprite dimensions exceed source image dimension`);
   }
   return new Sprite(img, origin);
