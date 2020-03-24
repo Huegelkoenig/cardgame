@@ -23,11 +23,11 @@ constructor arguments:
 methods:
   .changeTo(coords): changes values to given coodinates
       coords... another Coords object
-  .add(summand): adds values to the existing x, y, width and height values
+  .add(summand): adds values to the existing x, y, width and height values and stores them in the Coords object
       summand... another Coords object
       returns the sum
   .justAdd(summand): like add, but doesnt change the original values
-  .multiply(multiplier): multiplies the corrosponding x values, y values, width values and height values
+  .multiply(multiplier): multiplies the corrosponding x values, y values, width values and height values and stores them in the Coords object
       multiplier... another Coords object
       returns the product
   .justMultiply(multiplier): like multiply, but doesnt change the original values
