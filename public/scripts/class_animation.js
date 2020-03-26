@@ -62,12 +62,16 @@ class Animation{
     this.last = undefined; //the time when the last frame was drawn (init only when animation starts)
     this.running=false;  //true, if the animation is running
     this.stopCycleVal=false;
+    this.callbackValue;
   }
 
   render(ctx, target){
     if (this.running){
       this.update();
       this.draw(ctx,target);
+    }
+    else{ //TODO: maybe render(ctx,target,forcedraw=false) ??
+      this.draw(ctx,target)
     }
   }
 
@@ -82,7 +86,7 @@ class Animation{
         if (this.cycleCounter>=this.repeats){
           this.progress = this.lastToDraw;
           //this.reset(); //TODO: sets all values to the initial state
-          this.callback();//TODO:
+          this.callback(this.callbackValue);//TODO:
         }
         else{
          this.progress = this.progress%this.sequence.length;
@@ -101,7 +105,8 @@ class Animation{
       target.x, target.y, target.width?target.width:this.origin.width, target.height?target.height:this.origin.height);
   }
   
-  start(){ //starts the animation
+  start(cbv){ //starts the animation
+    this.callbackValue = cbv;
     this.last=Date.now();
     this.running = true;
   }

@@ -21,7 +21,7 @@ constructor arguments:
 methods:
   .append(name, asset[, $_force=false]): appends an asset object to the collection
       name... the name by which the asset is identified in the collection
-      img... an asset object
+      img... an asset object (eg a preloaded image)
       $_force... (optional), if set to true, the method .forceAppend() will be executed. standard is false: if a asset with the same name already existst in the collection, an Error will be thrown
   .forceAppend(name, asset):  appends an asset object to the collection, overwrites may existing assets with the same name
       name... the name by which the asset is identified in the collection
