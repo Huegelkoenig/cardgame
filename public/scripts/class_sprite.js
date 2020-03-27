@@ -17,12 +17,12 @@ description:
 
 constructor arguments:
   img... a preloaded image object
-  origin... an object {x: int, y: int, width: int, height: int} describing the position and size of the sprite relative to the img
+  origin... a Coords object {x: int, y: int, width: int, height: int} describing the position and size of the sprite relative to the img
 
 methods:
   .draw(ctx, target): draws the sprite on a canvas at the targeted coordinates
       ctx... the context of the canvas to draw to, e.g. ctx=canvas.getContext('2d')
-      target... an object {x: int, y: int [, width: int] [, height: int]} describing the position and size of the rendered sprite on the canvas
+      target... a Coords object {x: int, y: int [, width: int] [, height: int]} describing the position and size of the rendered sprite on the canvas
                 if width and/or height aren't given, the sprite will be drawn in its original size (this.sw and/or this.sh)
 
 example:

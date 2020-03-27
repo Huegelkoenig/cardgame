@@ -1,25 +1,57 @@
-//TODO: add description
 //TODO: add text to fill into squirqle
 //TODO: maybe add option to scale around center
 //TODO: maybe add option to rotate
-//TODO: dummysave and reset global lineWidth,StrokeStyle,etc values after drawing
 //TODO: add shadowBlur, ShadowColor, shadowOffsetX +Y to this
-//TODO: checks in function newSquircle()
+
+/*
+contains:
+class Squircle: a simple class for squircles
+class squircle_Collection: a class for a collection of squircles (an object with additional methods containing suqircles)
+function newSquircle: checks (only required) arguments have the intented format and creates a new squircle
+*/
+
+
+
+/*
+class Squircle
+
+description:
+  a simple class for squircles
+  !constructor and method arguments must match the intented format!
+  !use function newSquircle() to check arguments!
+
+constructor arguments:
+  roundX... amount in percent of the rounded part of the horizontal lines (roundX="rounded part in pixels"/width)
+  roundY... amount in percent of the rounded part of the vertical lines (roundX="rounded parts in pixels"/width)
+            roundX=roundY=100 will create a circle, roundX=0 or roundY=0 will create a rectangle
+  $_stroke=true... (optional) if the outline of the squircle shall be stroked
+  $_strokeStyle="#000000"... (optional) the color of the stroke 
+  $_lineWidth=1... (optional) the width of the stroke
+  $_fill=true... (optional) if the squircle shall be filled
+  $_fillStyle="#FFFFFF"... (optional) the color of the fill
+
+methods:
+  .draw(ctx, target): draws the squircle on a canvas at the targeted coordinates
+      ctx... the context of the canvas to draw to, e.g. ctx=canvas.getContext('2d')
+      target... a Coords object {x: int, y: int, width: int, height: int} describing the position and size of the rendered squircle on the canvas
+
+example:
+let mySquircle = new Squircle(20, 60, true, 'blue', 2, true, 'green');  
+//better: let mySquircle = newSquircle(20,60);
+mySqircle.draw(ctx,{x:400, y:200, width: 300, height:100});
+*/
+
 class Squircle{
-  constructor(x, y, width, height, roundX, roundY, $_stroke=true, $_lineWidth=1, $_strokeStyle="#000000", $_fill=true, $_fillStyle="#FFFFFF"){ 
-    this.cx = x+width/2;
-    this.cy = y+height/2;
-    this.rx = width/2;
-    this.ry = height/2;
-    this.lw = this.rx-roundX;
-    this.lh = this.ry-roundY;
+  constructor(roundX, roundY, $_stroke=true, $_strokeStyle="#000000", $_lineWidth=1, $_fill=true, $_fillStyle="#FFFFFF", $_text=false){ 
+    this.roundX = roundX;   
+    this.roundY = roundY;   
     this.stroke = $_stroke;
     this.lineWidth = $_lineWidth;
     this.strokeStyle = $_strokeStyle;
     this.fill = $_fill;
     this.fillStyle = $_fillStyle;
   }
-
+/* remains from an old implementation
   get x(){
     return this.cx-this.rx;
   }
@@ -52,54 +84,116 @@ class Squircle{
     }
     this.ry = v;
   }
-  get roundX(){
-    return this.rx-this.lw;
-  }
-  set roundX(value){
-    let v=this.rx-value;
-    if (v<0){
-      throw Error('roundX must be <= width/2. roundX is set to '+value+' but should be <= '+this.width/2)
-    }
-    this.lw = v;
-  }
-  get roundY(){
-    return this.ry-this.lh;
-  }
-  set roundY(value){
-    let v=this.ry-value;
-    if (v<0){
-      throw Error('roundY must be <= height/2. roundY is set to '+value+' but should be <= '+this.height/2)
-    }
-    this.lh = v;
-  }
-
-  translate(tx,ty){
-    this.cx+=tx;
-    this.cy+=ty;
-  }
-
-  draw(){
-    ctx.lineWidth=this.lineWidth;
-    ctx.strokeStyle=this.strokeStyle;
+*/
+  draw(ctx,target){
+    //TODO: rewrite to 
+    let cx = target.x+target.width/2;  //center x
+    let cy = target.y+target.height/2; //center y
+    let rx = target.width/2;           //radius x (width in x direction from center)
+    let ry = target.height/2;          //radius y (height in y direction from center)
+    let lw = rx*(1-this.roundX/100);     //1/2 of the length of the straight line on top and bottom
+    let lh = ry*(1-this.roundY/100);     //1/2 of the length of the straight line on left and right
     ctx.fillStyle=this.fillStyle;
     ctx.beginPath();
-    ctx.moveTo(this.cx-this.rx, this.cy+this.lh);
-    ctx.lineTo(this.cx-this.rx,this.cy-this.lh);
-    ctx.ellipse(this.cx-this.lw,this.cy-this.lh,this.rx-this.lw,this.ry-this.lh,0,Math.PI,3*Math.PI/2)
-    ctx.lineTo(this.cx+this.lw,this.cy-this.ry);
-    ctx.ellipse(this.cx+this.lw,this.cy-this.lh,this.rx-this.lw,this.ry-this.lh,0,3*Math.PI/2,0);
-    ctx.lineTo(this.cx+this.rx,this.cy+this.lh);
-    ctx.ellipse(this.cx+this.lw,this.cy+this.lh,this.rx-this.lw,this.ry-this.lh,0,0,Math.PI/2);
-    ctx.lineTo(this.cx-this.lw,this.cy+this.ry);
-    ctx.ellipse(this.cx-this.lw,this.cy+this.lh,this.rx-this.lw,this.ry-this.lh,0,Math.PI/2,Math.PI);
-    ctx.stroke();
-    ctx.fill();
+    ctx.moveTo(cx-rx, cy+lh);
+    ctx.lineTo(cx-rx,cy-lh);
+    ctx.ellipse(cx-lw,cy-lh,rx-lw,ry-lh,0,Math.PI,3*Math.PI/2)
+    ctx.lineTo(cx+lw,cy-ry);
+    ctx.ellipse(cx+lw,cy-lh,rx-lw,ry-lh,0,3*Math.PI/2,0);
+    ctx.lineTo(cx+rx,cy+lh);
+    ctx.ellipse(cx+lw,cy+lh,rx-lw,ry-lh,0,0,Math.PI/2);
+    ctx.lineTo(cx-lw,cy+ry);
+    ctx.ellipse(cx-lw,cy+lh,rx-lw,ry-lh,0,Math.PI/2,Math.PI);
+    let dummy ={}; //keeps the global ctx styles
+    if (this.stroke){
+      dummy.strokeStyle = ctx.strokeStyle;
+      dummy.lineWidth = ctx.linewidth;
+      ctx.strokeStyle = this.strokeStyle;
+      ctx.lineWidth = this.lineWidth;
+      ctx.stroke();
+      ctx.strokeStyle = dummy.strokeStyle;
+      ctx.lineWidth = dummy.lineWidth;
+    }
+    if (this.fill){
+      dummy.fillStyle = ctx.fillStyle;
+      ctx.fill();
+      ctx.fillStyle = dummy.fillStyle;
+      ctx.fill();
+    }
   }
 }
 
 
-function newSquircle(x,y,width,height,roundX,roundY,$_stroke=true, $_strokeStyle="#000000", $_fill=true, $_fillStyle="#FFFFFF"){
-  //TODO: checks
 
-  return new Squircle(x,y,width,height,roundX,roundY,$_stroke, $_strokeStyle, $_fill, $_fillStyle)
+/*
+class Squircle_Collection
+
+description:
+  a simple class for a collection of squircles. Extends the JS-Object with additional methods to append squircles to the collection and draw them
+  Squircles are identified in the collection via a given name
+  !constructor and method arguments must match the intented format!
+  !checks for argument types aren't implemented, yet!
+
+constructor arguments:
+  - none - 
+
+methods:
+  .append(name, squircle[, $_force=false]): appends a squircle object to the collection
+      name... the name by which a squircle is identified in the collection 
+      squircle... an object of the Squircle class
+      $_force... (optional), if set to true, the method .forceAppend() will be executed. standard is false: if a squircle with the same name already existst in the collection, an Error will be thrown
+  .forceAppend(name, squircle):  appends a squircle object to the collection, overwrites existing squircles with the same name
+      name... the name by which a squircle is identified in the collection 
+      squircle... an object of the Squircle class
+
+example:
+let squircles = new Squircle_Collection();
+let mySquircle = new Squircle(300,100);
+squircles.append('ellipse3-1', mySquircle);
+squircles.append('ellipse', anotherSquircle);  //throws an error, bc there's already a squircle called 'ellipse'
+squircles.append('ellipse', anotherSquircle, true);  //will overwrite the existing squircle called 'ellipse',  equals .forceAppend(...)
+*/
+
+class Squircle_Collection extends Object{
+  constructor(){
+    super();
+  }
+
+  append(name, squircle, $_force=false){
+    if ($_force || !this[name]){
+      this.forceAppend(name,squircle);
+    }
+    else{
+      throw new Error(`class_squircle.js: Squircle_Collection.append():\nYour Squircle_Collection ${this} has already an element called ${name}.\n${this}.append() was aborted.\n If you want to ignore existing squircles, use\n.append(name,squircle,true) or\n.forceAppend(name,squircle)`);      
+    }
+  }
+
+  forceAppend(name, squircle){
+    delete this[name];
+    this[name] = squircle;
+  }
+}
+
+
+
+/*
+function newSquircle(roundX,roundY,$_stroke=true, $_strokeStyle="#000000", $_lineWidth=1, $_fill=true, $_fillStyle="#FFFFFF")
+
+description:
+  checks (only the required) arguments and creates a new squircle
+
+arguments:
+  roundX... must be a number between 0 (included) and 100 (included)
+  roundY... must be a number between 0 (included) and 100 (included)
+  
+return:
+  if arguments are ok, a squricle object will be returned, else an error will be thrown
+*/
+
+function newSquircle(roundX,roundY,$_stroke=true, $_strokeStyle="#000000", $_lineWidth=1, $_fill=true, $_fillStyle="#FFFFFF"){
+  if (!Number.isFinite(roundX) || roundX<0 || roundX>100 || !Number.isFinite(roundY) || roundY<0 || roundY>100){
+      throw Error(`class_squircle.js: function newSquircle: roundX and roundY must be between 0 (included) and 100 (included)`);
+  }
+
+  return new Squircle(roundX,roundY, $_stroke, $_strokeStyle, $_lineWidth, $_fill, $_fillStyle);
 }
