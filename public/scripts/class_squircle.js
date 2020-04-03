@@ -40,9 +40,11 @@ let mySquircle = new Squircle(20, 60, true, 'blue', 2, true, 'green');
 //better: let mySquircle = newSquircle(20,60);
 mySqircle.draw(ctx,{x:400, y:200, width: 300, height:100});
 */
-
+/*
+* @param roundX int
+*/
 class Squircle{
-  constructor(roundX, roundY, $_stroke=true, $_strokeStyle="#000000", $_lineWidth=1, $_fill=true, $_fillStyle="#FFFFFF", $_text=false){ 
+  constructor(roundX, roundY, $_stroke=false, $_lineWidth=1, $_strokeStyle="#000000", $_fill=false, $_fillStyle="#FFFFFF", $_filltext=false, $_text='', $_font='1px Arial', $_textFillStyle, $_textAlign='center', $_textBaseline='middle'){ 
     this.roundX = roundX;   
     this.roundY = roundY;   
     this.stroke = $_stroke;
@@ -50,6 +52,13 @@ class Squircle{
     this.strokeStyle = $_strokeStyle;
     this.fill = $_fill;
     this.fillStyle = $_fillStyle;
+    this.filltext = $_filltext;
+    this.text = $_text;
+    this.font = $_font;
+    this.textFillStyle = $_textFillStyle;
+    this.textAlign = $_textAlign;
+    this.textBaseline =$_textBaseline;
+
   }
 /* remains from an old implementation
   get x(){
@@ -86,14 +95,13 @@ class Squircle{
   }
 */
   draw(ctx,target){
-    //TODO: rewrite to 
+    //TODO: may rewrite to this.cx, so memory doesnt have to be allocated on every call of draw() ?
     let cx = target.x+target.width/2;  //center x
     let cy = target.y+target.height/2; //center y
     let rx = target.width/2;           //radius x (width in x direction from center)
     let ry = target.height/2;          //radius y (height in y direction from center)
     let lw = rx*(1-this.roundX/100);     //1/2 of the length of the straight line on top and bottom
     let lh = ry*(1-this.roundY/100);     //1/2 of the length of the straight line on left and right
-    ctx.fillStyle=this.fillStyle;
     ctx.beginPath();
     ctx.moveTo(cx-rx, cy+lh);
     ctx.lineTo(cx-rx,cy-lh);
@@ -116,9 +124,24 @@ class Squircle{
     }
     if (this.fill){
       dummy.fillStyle = ctx.fillStyle;
+      ctx.fillStyle = this.fillStyle;
       ctx.fill();
       ctx.fillStyle = dummy.fillStyle;
-      ctx.fill();
+    }
+    if (this.filltext){
+      dummy.font = ctx.font;
+      dummy.textFillStyle = ctx.fillStyle;
+      dummy.textAlign = ctx.textAlign;
+      dummy.textBaseline = ctx.textBaseline;
+      ctx.font = this.font;
+      ctx.fillStyle = this.textFillStyle;
+      ctx.textAlign = this.textAlign;
+      ctx.textBaseline = this.textBaseline;
+      ctx.fillText(this.text, cx, cy);
+      ctx.font = dummy.font;
+      ctx.fillStyle = dummy.textFillStyle;
+      ctx.textAlign = dummy.textAlign;
+      ctx.textBaseline = dummy.textBaseline;
     }
   }
 }
