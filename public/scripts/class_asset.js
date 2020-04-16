@@ -64,8 +64,10 @@ class Asset_Collection extends Object{
 
   load(srcfiles){
     return Promise.all(srcfiles.map(async (entry)=>{
-      this.append(entry[1], await loadAsset(entry[0],entry[3]), entry[2]);
-    }))         //name                      type     src        force 
+      let promise = await loadAsset(entry[0],entry[3]); //TODO: await loadAsset(...).then(()=>{ ...customevent sends filesize for loadingbar... ; return asset})
+      this.append(entry[1], promise, entry[2]);
+      }));
+               //name                      type     src        force 
   }
 }
 
@@ -105,11 +107,9 @@ function loadAsset(type, src){
     break;
     case 'sound':
     case 'audio':
-      console.log('audio ' + src + ' loading :');
       asset = new Audio();
       promise = new Promise(resolve=>{
         asset.oncanplaythrough = ()=>{
-          console.log('audio ' + src + ' ready :');
           resolve(asset);
         }
       });

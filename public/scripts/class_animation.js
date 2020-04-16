@@ -91,6 +91,7 @@ class Animation{
     this.stopCycleVal=false;
     this.finalCallbackArguments;
     this.hidden = $_hidden;
+    this.started = false;
     this.initial = {};
     this.initial.origin = origin;
     this.initial.shift = shift;
@@ -108,11 +109,10 @@ class Animation{
   }
 
   render(ctx, target){
-    if (this.running){
-      this.update();//.then(()=>{
-      //})
-    }
     if (!this.hidden){
+      if (this.running){
+        this.update();
+      }
       this.draw(ctx,target);
     }
   }
@@ -153,13 +153,13 @@ class Animation{
   }
   
   start(fcba){ //starts the animation
-    if (this.running === false){
+    if (this.started === false){
       this.startCallback();
-    }
-    
-    this.finalCallbackArguments = fcba;
-    this.last=Date.now();
-    this.running = true;
+      this.finalCallbackArguments = fcba;
+      this.last=Date.now();
+      this.running = true;
+      this.started = true;
+    }    
   }
 
   stop(){ //stops the animation immediatelly
@@ -174,10 +174,17 @@ class Animation{
   }
 
   pause(){
-
+    this.running = false;
   }
-  resume(){
-    
+  resume(fcba){
+    if (this.started === false){
+      this.start(fcba);
+    }
+    else{
+      this.nextSprite();
+      this.last=Date.now();
+      this.running = true;    
+    }    
   }
 
   show(){
@@ -221,6 +228,7 @@ class Animation{
     this.finalCallback = this.initial.finalCallback;
     this.cycleCallback = this.initial.cycleCallback;
     this.hidden = this.initial.hidden;
+    this.started = false;
    }
 
    resetCycle(){ //resets the animation after the cycle is completed
@@ -274,10 +282,6 @@ class Animation_Collection extends Object{
   forceAppend(name, animation){
     delete this[name];
     this[name] = animation;
-  }
-
-  renderAll(){
-    //TODO:
   }
 }
 
