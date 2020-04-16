@@ -24,9 +24,10 @@ constructor arguments:
                  eg: origin = {x:0, y:0, width: 100, height: 100}; innerOrigin = {x:20, y:30, width: 60, height: 50};  first sprite to drawn has origincoords(20,30,60,50), second sprite has origincoords(120,130,60,50)
   cycleShift... a Coords object describing the amount of pixels the animation shifts after each cycle
   $_extraShift... (optional) a special kind of shift, which can be invoked anytime
+  $_startCallback... (optional) a function to execute when teh animation starts
   $_repeats... (optional) the amount of repeats before the animation shall stop, standard is Infinity
   $_lastToDraw... (optional) the position in the sequence that shall be drawn, after the amount of cycles exceedes $_repeats
-  $_callback... (optional) a function to execute after the amount of cycles exceedes $_repeats
+  $_finalCallback... (optional) a function to execute after the amount of cycles exceedes $_repeats
   $_cycleCallback... (optional) a function to execute after each cycle
 
 methods:
@@ -36,24 +37,50 @@ methods:
       ctx... the context of the canvas to draw to, e.g. ctx=canvas.getContext('2d')
       target... an Coords object {x: int, y: int [, width: int] [, height: int]} describing the position and size of the rendered sprite on the canvas
                      if width and/or height aren't given, the sprite will be drawn in its original size (this.sw and/or this.sh)
+  .start(cbv): starts the animation
+
+    this.finalCallbackArguments = cbv;
+    this.last=Date.now();
+    this.running = true;
+  }
+
+  stop(){ //stops the animation immediatelly
+    this.running = false;
+    this.reset();
+  }
+
+  stopCycle(){
+    this.cycleCallback = () =>{
+      this.stop();
+    }
+  }
+
+  pause(){
+
+  }
+  resume(){
+    
+  }
 
 example:
 let myAnimation = new Animation(preloadedImages[2], {x:0, y:120, width:20, height:20}, 1300, 8, 0, 'normal', 0);
 */
 
 class Animation{
-  constructor(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_repeats=Infinity, $_lastToDraw=0, $_callback = ()=>{}, $_cycleCallback = ()=>{}){
+  constructor(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_startCallback= ()=>{}, $_repeats=Infinity, $_lastToDraw=0, $_finalCallback= ()=>{}, $_cycleCallback= ()=>{}, $_hidden = false){
     this.img = img;
     this.origin = origin;
     this.shift = shift;
     this.duration = duration;
     this.sequence = sequence;
-    ($_innerOrigin === false)?(this.innerOrigin = newCoords(0,0,this.origin.width,this.origin.height)):(this.innerOrigin = $_innerOrigin);
-    ($_cycleShift === false)?(this.cycleShift = newCoords(0,0,0,0)):(this.cycleShift = $_cycleShift);
-    ($_extraShift === false)?(this.extraShift = newCoords(0,0,0,0)):(this.extraShift = $_extraShift);
+    this.innerOrigin = ($_innerOrigin === false)?(newCoords(0,0,this.origin.width,this.origin.height)):($_innerOrigin);
+    this.cycleShift = ($_cycleShift === false)?(this.cycleShift = newCoords(0,0,0,0)):($_cycleShift);
+    this.extraShift = ($_extraShift === false)?( newCoords(0,0,0,0)):($_extraShift);
+    this.startCallback = $_startCallback;
     this.repeats = $_repeats;
     this.lastToDraw = $_lastToDraw; 
-    this.callback = $_callback; 
+    this.finalCallback = $_finalCallback;
+    this.cycleCallback = $_cycleCallback;
     this.progress = 0; //the actual progress of the sequence: this.sequence[this.progress]
     this.counter = 0; //a counter how often the progress changed overall
     this.cycleCounter = 0; // a counter how often the progress changed during this cycle
@@ -62,16 +89,31 @@ class Animation{
     this.last = undefined; //the time when the last frame was drawn (init only when animation starts)
     this.running=false;  //true, if the animation is running
     this.stopCycleVal=false;
-    this.callbackValue;
+    this.finalCallbackArguments;
+    this.hidden = $_hidden;
+    this.initial = {};
+    this.initial.origin = origin;
+    this.initial.shift = shift;
+    this.initial.duration = duration;
+    this.initial.sequence = sequence;
+    this.initial.innerOrigin = $_innerOrigin;
+    this.initial.cycleShift = $_cycleShift;
+    this.initial.extraShift = $_extraShift;
+    this.initial.startCallback = $_startCallback;
+    this.initial.repeats = $_repeats;
+    this.initial.lastToDraw = $_lastToDraw;
+    this.initial.finalCallback = $_finalCallback;
+    this.initial.cycleCallback = $_cycleCallback;
+    this.initial.hidden = $_hidden;
   }
 
   render(ctx, target){
     if (this.running){
-      this.update();
-      this.draw(ctx,target);
+      this.update();//.then(()=>{
+      //})
     }
-    else{ //TODO: maybe render(ctx,target,forcedraw=false) ??
-      this.draw(ctx,target)
+    if (!this.hidden){
+      this.draw(ctx,target);
     }
   }
 
@@ -80,13 +122,17 @@ class Animation{
       this.now = Date.now();
       let spritesSinceLast = Math.floor((this.now - this.last)/this.msps);
       if (spritesSinceLast){
+        let cC = this.cycleCounter;
         this.progress += spritesSinceLast;
         this.counter += spritesSinceLast;
         this.cycleCounter+= Math.floor(this.progress/this.sequence.length);
+        if (this.cycleCounter>cC){
+          this.cycleCallback();
+        }
         if (this.cycleCounter>=this.repeats){
           this.progress = this.lastToDraw;
           //this.reset(); //TODO: sets all values to the initial state
-          this.callback(this.callbackValue);//TODO:
+          this.finalCallback(this.finalCallbackArguments);//TODO:
         }
         else{
          this.progress = this.progress%this.sequence.length;
@@ -94,6 +140,7 @@ class Animation{
         this.last = this.now;
       }
     }
+    //return new Promise((resolve)=>resolve());
   }  
 
   draw(ctx,target){
@@ -105,8 +152,12 @@ class Animation{
       target.x, target.y, target.width?target.width:this.origin.width, target.height?target.height:this.origin.height);
   }
   
-  start(cbv){ //starts the animation
-    this.callbackValue = cbv;
+  start(fcba){ //starts the animation
+    if (this.running === false){
+      this.startCallback();
+    }
+    
+    this.finalCallbackArguments = fcba;
     this.last=Date.now();
     this.running = true;
   }
@@ -117,11 +168,23 @@ class Animation{
   }
 
   stopCycle(){
-    //TODO: maybe with Proxys
+    this.cycleCallback = () =>{
+      this.stop();
+    }
   }
 
   pause(){
 
+  }
+  resume(){
+    
+  }
+
+  show(){
+    this.hidden=false;
+  }
+  hide(){
+    this.hidden=true;
   }
 
 
@@ -130,7 +193,7 @@ class Animation{
     this.cycleCounter+= Math.floor(this.progress/this.sequence.length);
     if (this.cycleCounter>=this.repeats){//TODO: stop animation etc
       this.progress = this.lastToDraw; 
-      this.callback();
+      this.finalCallback();
     }
     else{
      this.progress = this.progress%this.sequence.length;
@@ -138,17 +201,30 @@ class Animation{
     this.last = this.now;
    }
 
-   reset(){ //resets the progress values
+   reset(){ //resets the animation to initial state
     this.progress = 0;
     this.counter = 0;
     this.cycleCounter = 0;
     this.now = undefined;
     this.last = undefined;
     this.stopCycleVal = false;
+    this.origin = this.initial.origin;
+    this.shift = this.initial.shift;
+    this.duration = this.initial.duration;
+    this.sequence = this.initial.sequence;
+    this.innerOrigin = this.initial.innerOrigin;
+    this.cycleShift = this.initial.cycleShift;
+    this.extraShift = this.initial.extraShift;
+    this.startCallback = this.initial.startCallback;
+    this.repeats = this.initial.repeats;
+    this.lastToDraw = this.initial.lastToDraw;
+    this.finalCallback = this.initial.finalCallback;
+    this.cycleCallback = this.initial.cycleCallback;
+    this.hidden = this.initial.hidden;
    }
 
-   resetCycle(){
-
+   resetCycle(){ //resets the animation after the cycle is completed
+      //TODO:
    }
 }
 
@@ -209,7 +285,7 @@ class Animation_Collection extends Object{
 
 
 /*
-function newAnimation(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_repeats=Infinity, $_lastToDraw=0, $_callback = ()=>{})
+function newAnimation(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_repeats=Infinity, $_lastToDraw=0, $_finalCallback = ()=>{})
 
 description:
   checks the arguments and creates a new animation
@@ -226,13 +302,13 @@ arguments:
   $_extraShift... (optional) a special kind of shift, which can be invoked anytime
   $_repeats... (optional) the amount of repeats before the animation shall stop, standard is Infinity
   $_lastToDraw... (optional) the sprite that shall be drawn last, after the amount of cycles exceedes $_repeats
-  $_callback... (optional) a function to execute after the amount of cycles exceedes $_repeats
+  $_finalCallback... (optional) a function to execute after the amount of cycles exceedes $_repeats
 
 return:
   if arguments are ok, an animation object will be returned, else an error will be thrown
 */
 
-function newAnimation(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_repeats=Infinity, $_lastToDraw=0, $_callback = ()=>{}){
+function newAnimation(img, origin, shift, duration, sequence, $_innerOrigin=false, $_cycleShift=false, $_extraShift=false, $_startCallback = ()=>{}, $_repeats=Infinity, $_lastToDraw=0, $_finalCallback = ()=>{}){
   if (!img){
     throw Error(`class_animation.js: function newAnimation: image is undefined`);
   }
@@ -273,5 +349,5 @@ function newAnimation(img, origin, shift, duration, sequence, $_innerOrigin=fals
     throw Error(`class_animation.js: function newAnimation: $_lastToDraw is not an integer or <= 0`);
   }
 
-  return new Animation(img, origin, shift, duration, sequence, $_innerOrigin, $_cycleShift, $_extraShift, $_repeats, $_lastToDraw, $_callback);
+  return new Animation(img, origin, shift, duration, sequence, $_innerOrigin, $_cycleShift, $_extraShift, $_startCallback, $_repeats, $_lastToDraw, $_finalCallback);
 }

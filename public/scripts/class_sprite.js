@@ -29,6 +29,12 @@ example:
 let mySprite = new Sprite(preloadedImages[4], {x:40, y:120, width:20, height:20});
 //better: let mySprite = newSprite(preloadedImages[4], {x:40, y:120, width:20, height:20});
 mySprite.draw(ctx,{x:407, y:210, width: 40, height:40});
+
+notes:
+can be used to draw a whole image:
+e.g. a preloaded image has size 200x150 and is stored as img_collection('my_image')  (see class_asset.js how to preload images and use img_collection)
+let img = newSprite( img_collection('my_image'), newCoords(0,0,200,150) );
+img.draw(ctx, target_coords);
 */
 
 class Sprite{
@@ -39,6 +45,10 @@ class Sprite{
 
   draw(ctx,target){
     ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x, target.y, target.width?target.width:this.origin.width, target.height?target.height:this.origin.height);
+  }
+
+  render(ctx,target){
+    this.draw(ctx,target);
   }
 }
 

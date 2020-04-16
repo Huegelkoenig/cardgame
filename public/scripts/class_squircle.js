@@ -112,37 +112,28 @@ class Squircle{
     ctx.ellipse(cx+lw,cy+lh,rx-lw,ry-lh,0,0,Math.PI/2);
     ctx.lineTo(cx-lw,cy+ry);
     ctx.ellipse(cx-lw,cy+lh,rx-lw,ry-lh,0,Math.PI/2,Math.PI);
-    let dummy ={}; //keeps the global ctx styles
+    ctx.save();
     if (this.stroke){
-      dummy.strokeStyle = ctx.strokeStyle;
-      dummy.lineWidth = ctx.linewidth;
       ctx.strokeStyle = this.strokeStyle;
       ctx.lineWidth = this.lineWidth;
       ctx.stroke();
-      ctx.strokeStyle = dummy.strokeStyle;
-      ctx.lineWidth = dummy.lineWidth;
     }
     if (this.fill){
-      dummy.fillStyle = ctx.fillStyle;
       ctx.fillStyle = this.fillStyle;
       ctx.fill();
-      ctx.fillStyle = dummy.fillStyle;
     }
     if (this.filltext){
-      dummy.font = ctx.font;
-      dummy.textFillStyle = ctx.fillStyle;
-      dummy.textAlign = ctx.textAlign;
-      dummy.textBaseline = ctx.textBaseline;
       ctx.font = this.font;
       ctx.fillStyle = this.textFillStyle;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
       ctx.fillText(this.text, cx, cy);
-      ctx.font = dummy.font;
-      ctx.fillStyle = dummy.textFillStyle;
-      ctx.textAlign = dummy.textAlign;
-      ctx.textBaseline = dummy.textBaseline;
     }
+    ctx.restore();
+  }
+
+  render(ctx,target){
+    this.draw(ctx,target);
   }
 }
 

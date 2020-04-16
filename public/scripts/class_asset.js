@@ -28,7 +28,7 @@ methods:
       asset... an asset object
   .load(srcfiles): preloads assets and appends them to the collection
       srcfiles... array containing one or multiple arrays of the form [type, name, force, src]
-          type... the type of the asset. Must be 'img', 'audio' or 'video'
+          type... the type of the asset. Must be 'img', 'audio' or 'video'   ('image' or 'sound' also allowed)
           name... the name by which the asset is identified in the collection
           force... true or false. if true, the asset will be forceappended. if false an Error will be thrown if an asset with the same name already exists in the collection
           src... a string  containing the src of the asset
@@ -65,7 +65,7 @@ class Asset_Collection extends Object{
   load(srcfiles){
     return Promise.all(srcfiles.map(async (entry)=>{
       this.append(entry[1], await loadAsset(entry[0],entry[3]), entry[2]);
-    }))
+    }))         //name                      type     src        force 
   }
 }
 
@@ -94,6 +94,7 @@ function loadAsset(type, src){
   let asset;
   let promise
   switch(type) {
+    case 'image':
     case 'img':
       asset = new Image();
       promise =  new Promise(resolve=>{
@@ -101,21 +102,24 @@ function loadAsset(type, src){
           resolve(asset);
         }
       });
-    break;  
+    break;
+    case 'sound':
     case 'audio':
-      console.log('audio :');
+      console.log('audio ' + src + ' loading :');
       asset = new Audio();
       promise = new Promise(resolve=>{
-        asset.canplaythrough = ()=>{
-          console.log('audio ready :');
+        asset.oncanplaythrough = ()=>{
+          console.log('audio ' + src + ' ready :');
           resolve(asset);
         }
       });
     break;   
     case 'video':
+      console.log('video ' + src + ' loading :');
       asset = document.createElement("video");
       promise =  new Promise(resolve=>{
         asset.canplaythrough = ()=>{
+          console.log('video ' + src + ' loading :');
           resolve(asset);
         }
       });
