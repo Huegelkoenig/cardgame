@@ -154,11 +154,12 @@ class Animation{
   
   start(fcba){ //starts the animation
     if (this.started === false){
+      this.started = true;
       this.startCallback();
       this.finalCallbackArguments = fcba;
       this.last=Date.now();
       this.running = true;
-      this.started = true;
+      
     }    
   }
 
@@ -200,12 +201,11 @@ class Animation{
     this.cycleCounter+= Math.floor(this.progress/this.sequence.length);
     if (this.cycleCounter>=this.repeats){//TODO: stop animation etc
       this.progress = this.lastToDraw; 
-      this.finalCallback();
+      this.finalCallback(this.finalCallbackArguments);
     }
     else{
      this.progress = this.progress%this.sequence.length;
     }
-    this.last = this.now;
    }
 
    reset(){ //resets the animation to initial state
