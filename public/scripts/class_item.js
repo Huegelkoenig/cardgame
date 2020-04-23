@@ -1,6 +1,6 @@
 class Item{
   constructor(obj={}, target=newCoords(0,0,0,0), status=false, $_layer=ctx, $_zIndex=0, $_mouseclick=undefined, $_mousedown=undefined, $_mouseup=undefined, $_mouseover=undefined, $_mouseout=undefined){
-    this.obj = Object.assign( Object.create( Object.getPrototypeOf(obj)),obj);
+    this.obj = obj;
     this.target = target;
     this.status = status;
     this.layer = $_layer;
@@ -19,8 +19,14 @@ class Item{
     this.hovered = false;
   }
 
-}
+  set obj(obj){
+    this._obj_ = Object.assign( Object.create( Object.getPrototypeOf(obj)),obj);
+  }
 
+  get obj(){
+    return this._obj_
+  }
+}
 
 
 class Item_Collection extends Object{
