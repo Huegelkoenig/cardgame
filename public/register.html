@@ -1,0 +1,51 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>register</title>
+</head>
+<body>
+  <p>Cardgame</p>
+  <p></p>
+  <form id="register_form" action="/register" method="post">
+      <p>register as a new user</p>
+      <input type="text" placeholder="Username" size="20" name="registerusername" required>
+      <input type="email" placeholder="email" size="20" name="registeremail" required>
+      <input type="text" placeholder="Password" size="20" name="registerpassword" required>
+      <input type="text" placeholder="Repeat password" size="20" name="registerrepeatpassword" required>      
+       <input type="submit">
+  </form>
+  <p id="warning"></p>
+  <a href="/">i am already registered. get me back to the login page</a>
+  <script>
+    if (document.cookie){
+      let warning = getCookie('registerwarning');
+      if (warning && warning.length>=1){
+        document.getElementById('warning').innerHTML = warning
+      }
+
+      if (getCookie('success') == 'true'){
+        setTimeout(()=>{window.location.replace('login.html')},2000);
+      }
+    }
+    
+
+
+    function getCookie(cname) { //from W§schools.com
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+  </script>
+</body>
+</html>

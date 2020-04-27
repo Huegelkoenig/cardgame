@@ -1,19 +1,28 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const express = require('express');
 
+const express = require('express');
 const http = require('http');
 const https = require('https');
 
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const dbScripts = require('./my_modules/db-scripts/db-scripts');
+
+const jwt = require('jsonwebtoken');
+const myJWTsecret = process.env.JWTSECRET;
 
 const PORT = process.env.PORT || 8322;
 const HTTPPORT = process.env.HTTPPORT || 8323;
+const DOMAIN = process.env.DOMAIN || localhost
 
-httpApp = express();
+
+
+//---- http server - will be redirected to https server ----
+const httpApp = express();
 const httpServer = http.createServer(httpApp);
-httpApp.get("*", function (req, res, next) {
-  console.log('req.headers.host :>> ', req.headers.host);
+httpApp.get("*", (req, res, next) => {
     res.status(200).sendFile(__dirname+'/public/http.html');
 });
 httpServer.listen(HTTPPORT || 8323,() => {
@@ -22,6 +31,7 @@ httpServer.listen(HTTPPORT || 8323,() => {
 
 
 
+//---- https server ----------------------------------------
 const app = express();
 const server = https.createServer(
   {
@@ -32,31 +42,175 @@ const server = https.createServer(
 );
 
 app.use(express.static(__dirname+'/public'));
-app.get('/', (req,res) => res.status(200).sendFile('index.html')); 
+app.use('/', cookieParser());
+app.use('/', bodyParser.urlencoded({extended:true}));
+
+app.get('/', (req,res,next) => {
+  console.log('received GET / request');
+  if (validateCookieToken(req)){
+    console.log('with valid cookie');
+    //set cookie again to extend expiration date
+    res.cookie('myAuthToken', req.cookies.myAuthToken, {
+      maxAge: 3 * 1000, // would expire after x seconds  (x * 1000)
+      httpOnly: true, // The cookie is only accessible by the web server
+      secure: true, // send only via https
+      domain: DOMAIN,  //TODO
+      path: '/'
+    });
+    res.status(200).sendFile(__dirname + '/private/game.html'); //TODO:
+  }  
+  else{
+  // no cookie => no authorization => need to login on index.html
+    console.log('without valid cookie');
+    res.status(200).sendFile(__dirname+'/public/login.html');  //sends loginFile
+  }
+})
+
+app.post('/', async (req,res) => {
+  console.log('received POST / request');
+  if (validateCookieToken(req)) {
+    //this appears, when the game.html sends the xhttp-request
+    console.log('with valid cookie');
+    // TODO: get personal login-id from mysql-table users, that gets created on login and is only limited for a certain amount of time
+    // TODO: write new routine that overwrites these login id's after a certain amount of time after the last login
+    // (setTimeout is bad, since a new login could have happened, maybe: settimeout, but check for last logindate first (must be saved into userstable, too)
+    let rand = Math.random(); //TODO: replace with sessionID
+    console.log('rand :>> ', rand);
+      res.status(200).send({sessionID: rand, token: req.cookies['myAuthToken']}); //TODO: replace with sessionID
+      //i think i really need to send the token here again, or else someone could just bruteforce socket-connections with random sessionID's
+      //maybe hash token again before sending it to the user?
+      // game.html will start a socket.io connection with this sessionID (and token)
+  }
+  else{
+    console.log('...without valid cookie');
+    // no cookie was set before, so this must be an login attemp
+    console.log('User wants to log in. Checking Username and password');
+  
+    try{
+      if (await validateCredentials(req)){
+        console.log('succesful');
+        //login succesfull
+        let token;
+        token = jwt.sign({username: req.body.loginusername}, myJWTsecret);
+        res.cookie('myAuthToken', token, {
+          maxAge: 3 * 1000, // would expire after x seconds  (x*1000)
+          httpOnly: true, // The cookie only accessible by the web server
+          secure: true, // send only via https
+          domain: DOMAIN,
+          path: '/'
+        });
+        res.status(200).sendFile(__dirname + '/private/game.html');
+      }
+      else{
+        console.log('not succesful. Wrong username or password');
+        res.status(401).send({error: 'login credentials not correct'});
+        //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
+      }
+    }
+    catch (error){
+        console.log('error 61:', error);
+        res.status(401).send('internal error');
+    }
+     
+    }
+    
+  }
+)
+
+app.post('/register', async (req,res)=>{
+  if (req.body.registerusername){
+    if (req.body.registerpassword===req.body.registerrepeatpassword){
+      let registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail);
+      if (registerResult.state){
+        res.cookie('registerwarning', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
+        res.cookie('success', true, {maxAge:1000});
+        res.status(200).sendFile(__dirname + '/public/register.html');
+      }
+      else{
+        res.cookie('registerwarning', registerResult.message, {maxAge:1000});
+        res.status(401).sendFile(__dirname+'/public/register.html');
+      }
+    }
+    else{
+      res.cookie('registerwarning', 'invalid credentials', {maxAge:1000});
+      res.status(401).sendFile(__dirname+'/public/register.html');    
+    }
+  }
+  else{
+    //first load of the register page
+    res.status(200).sendFile(__dirname+'/public/register.html');
+  }
+});
+
+
+function validateCookieToken(req){
+  if (req.cookies['myAuthToken']){
+    console.log('cookieToken vorhanden:');
+    let token;
+    try{                         
+      token = jwt.verify(req.cookies['myAuthToken'], myJWTsecret)
+    }
+    catch (error){
+      //jwt invalid => no authorization => need to login on index.html
+      console.log('error in function validateCookieToken(req): ', error);
+      return false;
+    }
+    //no error => cookie exists and jwt is valid
+    console.log('token: ',token) //TODO:
+    return true;
+  }
+  console.log('(cookieToken nicht vorhanden, daher)');
+  return false;
+}
+
+async function validateCredentials(req){
+  //validate username and password
+  console.log('validating credentials:');
+  if (req.body.loginusername && req.body.loginpassword){
+    console.log('username: ', req.body.loginusername);
+    console.log('password: ', req.body.loginpassword);
+    let userData;
+    try{
+      userData = await dbScripts.getUserData('username', req.body.loginusername);  
+    }
+    catch(error){
+      console.log('ERROR in function validateCredentials: ' + error.code);
+      return false;
+    }
+    if (userData.length == 1 && userData[0]['UserName'] == req.body.loginusername && userData[0]['UserPassword'] == req.body.loginpassword){
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+
+
 
 server.listen(PORT || 8322, () => {
   console.log(`https listening on port ${PORT}`);
  });
+
+
+
+
+
+
+
+
 
 const socketio = require('socket.io');
 const io = socketio.listen(server);
 
 
 io.use((socket, next) => {
-  let username = socket.handshake.query.username;
-  let password = socket.handshake.query.username;
-  console.log(`new user '${username}' tries to connect with password '${socket.handshake.query.password}'`);
-  if (checkformat(username) && checkformat(password)){
-    if (checkUserCredentialsInDatabase(username,password)){
-      return next();
-    }
-    else{
-      return next(new Error('userAndPassDontMatch'));
-    }
+  if (socket.handshake.query.token){
+    socket.username = jwt.verify(socket.handshake.query.token, myJWTsecret).username;
   }
-  else{
-    return next(new Error('formatInvalid'));
-  }
+  
+  next();
 });
 
 
@@ -82,7 +236,10 @@ function checkformat(string){
 
 
 io.on('connection', (socket) => {
-  console.log(`'${socket.handshake.query.username}' connected with password '${socket.handshake.query.password}`);
+  console.log(`a new user connected to SOCKET.IO with userID '${socket.handshake.query.sessionID}', username '${socket.username}' and socket.id '${socket.id}'`);
+  //TODO: store socket.id in mySQL table next to user with sessionID, so this user is identified 
+  //maybe: socket.username = SELECT userName FROM users WHERE sessionID = pool.escape(socket.handshake.query.sessionID);
+  //may do this in a io.use((socket,next)=>{})
 });
 
 
@@ -90,9 +247,3 @@ io.on('connection', (socket) => {
 
 
 //////////////////////////////////////////////////////////////////////////////////
-
-
-let allnames = {};
-let openGames = {}; 
-
-
