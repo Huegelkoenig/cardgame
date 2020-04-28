@@ -1,11 +1,11 @@
-
-
+let Fault = require('../fault/fault.js').Fault;
 let pool;
 
 const TABLE = 'users';
 const USERNAME ='UserName';
 const EMAIL = 'UserEmail';
 const SESSIONID = 'SessionID';
+
 
 
 function getUserBy(type,value){
@@ -22,8 +22,6 @@ function getUserBy(type,value){
     pool.query(`SELECT * FROM ${TABLE} WHERE ` + type + ` = ?;`,[value], (err,data)=>{if(err){reject(err)}; resolve(data);});
   });
 }
-
-
 
 
 
