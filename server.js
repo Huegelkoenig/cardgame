@@ -48,7 +48,7 @@ app.use('/', bodyParser.urlencoded({extended:true}));
 app.get('/', (req,res,next) => {
   console.log('received GET / request');
   if (validateCookieToken(req)){
-    console.log('with valid cookie');
+    console.log('GET with valid cookie');
     //set cookie again to extend expiration date
     res.cookie('myAuthToken', req.cookies.myAuthToken, {
       maxAge: 3 * 1000, // would expire after x seconds  (x * 1000)
@@ -61,7 +61,7 @@ app.get('/', (req,res,next) => {
   }  
   else{
   // no cookie => no authorization => need to login on index.html
-    console.log('without valid cookie');
+    console.log('GET without valid cookie');
     res.status(200).sendFile(__dirname+'/public/login.html');  //sends loginFile
   }
 })
@@ -70,19 +70,19 @@ app.post('/', async (req,res) => {
   console.log('received POST / request');
   if (validateCookieToken(req)) {
     //this appears, when the game.html sends the xhttp-request
-    console.log('with valid cookie');
+    console.log('POST with valid cookie');
     // TODO: get personal login-id from mysql-table users, that gets created on login and is only limited for a certain amount of time
     // TODO: write new routine that overwrites these login id's after a certain amount of time after the last login
     // (setTimeout is bad, since a new login could have happened, maybe: settimeout, but check for last logindate first (must be saved into userstable, too)
     let rand = Math.random(); //TODO: replace with sessionID
     console.log('rand :>> ', rand);
-      res.status(200).send({sessionID: rand, token: req.cookies['myAuthToken']}); //TODO: replace with sessionID
+      res.status(200).send({sessionID: rand, token: req.cookies['myAuthToken']}); //TODO: replace with just sessionID
       //i think i really need to send the token here again, or else someone could just bruteforce socket-connections with random sessionID's
       //maybe hash token again before sending it to the user?
       // game.html will start a socket.io connection with this sessionID (and token)
   }
   else{
-    console.log('...without valid cookie');
+    console.log('POST without valid cookie');
     // no cookie was set before, so this must be an login attemp
     console.log('User wants to log in. Checking Username and password');
   
@@ -102,13 +102,13 @@ app.post('/', async (req,res) => {
         res.status(200).sendFile(__dirname + '/private/game.html');
       }
       else{
-        console.log('not succesful. Wrong username or password');
-        res.status(401).send({error: 'login credentials not correct'});
+        console.log({error: 'not succesful. Wrong username or password'});
+        res.status(401).send('login credentials not correct');
         //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
       }
     }
     catch (error){
-        console.log('error 61:', error);
+        console.log('error Zeile 111:', error);
         res.status(401).send('internal error');
     }
      
@@ -171,12 +171,19 @@ async function validateCredentials(req){
     console.log('password: ', req.body.loginpassword);
     let userData;
     try{
-      userData = await dbScripts.getUserData('username', req.body.loginusername);  
+      userData = await dbScripts.getUserBy('name',req.body.loginusername)
     }
     catch(error){
-      console.log('ERROR in function validateCredentials: ' + error.code);
-      return false;
+      if (error.myerror == 'poolquery'){
+        console.log('\nERROR in function validateCredentials: \n' + error.myerror + '\n' + error.error);
+        return false;
+      }
+      else{
+        console.log('\nunhandled error\nthrowing it back:>>\n ', error);
+        throw error;
+      }  
     }
+
     if (userData.length == 1 && userData[0]['UserName'] == req.body.loginusername && userData[0]['UserPassword'] == req.body.loginpassword){
       return true;
     }
@@ -206,8 +213,18 @@ const io = socketio.listen(server);
 
 
 io.use((socket, next) => {
+  console.log('io.use :>> ');
+  socket.handshake.query.token = socket.handshake.query.token==='undefined'?undefined:socket.handshake.query.token;
   if (socket.handshake.query.token){
-    socket.username = jwt.verify(socket.handshake.query.token, myJWTsecret).username;
+    console.log('211 socket.handshake.query.token :>> ', socket.handshake.query.token);
+    try{
+      socket.username = jwt.verify(socket.handshake.query.token, myJWTsecret).username;
+    }
+    catch(err){//TODO:
+      console.log('ERROR at io.use() jwt.verify(socket.handshake.query.token, myJWTsecret) :>> ', err);
+      socket.emit('error',err);
+    }
+    
   }
   
   next();
@@ -236,10 +253,19 @@ function checkformat(string){
 
 
 io.on('connection', (socket) => {
+  console.log('startDDos :>> ');
+  socket.emit('startDDoS');
+  let count=0;
   console.log(`a new user connected to SOCKET.IO with userID '${socket.handshake.query.sessionID}', username '${socket.username}' and socket.id '${socket.id}'`);
   //TODO: store socket.id in mySQL table next to user with sessionID, so this user is identified 
   //maybe: socket.username = SELECT userName FROM users WHERE sessionID = pool.escape(socket.handshake.query.sessionID);
   //may do this in a io.use((socket,next)=>{})
+  socket.on('testDDoS',()=>{
+                            count++;
+                            if (count%1000==0){
+                              console.log('DDoS status :>> ', count);
+                            };
+                          });
 });
 
 
