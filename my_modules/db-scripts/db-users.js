@@ -1,4 +1,4 @@
-let Fault = require('../fault/fault.js');
+let Status = require('../status/class_status.js');
 let pool;
 
 const TABLE = 'users';
@@ -16,13 +16,13 @@ function getUserBy(type,value){
     case 'sessionID': type = SESSIONID;
     break;
     default: return new Promise((resolve,reject)=>{
-      reject(new Fault({file:'db-users.js', func: 'getUserBy()', line: 19, part: 'switch(type)', msg: `type is '${type}', but must be 'name', 'email' or 'sessionID'`}));
+      reject(new Status({file:'db-users.js', func: 'getUserBy()', line: 19, part: 'switch(type)', msg: `type is '${type}', but must be 'name', 'email' or 'sessionID'`}));
     });      
   }
   return new Promise((resolve,reject)=>{
     pool.query(`SELECT * FROM ${TABLE} WHERE ` + type + ` = ?;`, [value], (err,data)=>{
       if(err){
-        reject(new Fault({file:'db-users.js', func: 'getUserBy()', line: 25, part: 'pool.query', msg: `pool.query threw an error.`, originalerror: err}));
+        reject(new Status({file:'db-users.js', func: 'getUserBy()', line: 25, part: 'pool.query', msg: `pool.query threw an error.`, originalerror: err}));
       };
       resolve(data);
     });
@@ -43,13 +43,13 @@ function getUserBy(type,value){
      let sqlresult;
 
   // 1) check if username is valid
-  if (typeof name === 'string' && name.length>0 && name.match(/[a-z0-9]/ig).length==name.length){
+  if (typeof name === 'string' && name.length>0 && name.match(/[\!\$\ü\ö\ä\€\-\_\.\<\>a-z0-9]/ig).length==name.length){
     // 2) check if username already exists in DB
     try{
       sqlresult = await getUserBy('username',name);
     }
     catch (err){
-      if (err instanceof Fault){
+      if (err instanceof Status){
         err.log();
       }
       else{
@@ -72,12 +72,14 @@ function getUserBy(type,value){
       }
       else{
         try{
-          pool.query(`INSERT INTO ${TABLE} (UserName, UserPassword, UserEmail) VALUES (?, ?, ?);`,[name, password, email],(err,data)=>{
-            if (err){
-              reject(new Fault({file:'db-users.js', func: 'registerUser()', line: 77, part: 'pool.query', msg: `pool.query threw an error`, error: err}));
+          pool.query(`INSERT INTO ${TABLE} (UserName, UserPassword, UserEmail) VALUES (?, ?, ?);`,[name, password, email],
+            (err,data)=>{
+              if (err){
+                reject(new Status({file:'db-users.js', func: 'registerUser()', line: 77, part: 'pool.query', msg: `pool.query threw an error`, error: err}));
+              }
+              resolve({state: true, message: 'you registered succesfully'})
             }
-            resolve({state: true, message: 'you registered succesfully'})
-          });
+          );
         }
         catch (err){
           throw err;

@@ -1,4 +1,6 @@
 const mysql = require('mysql');
+const Status = require('../status/class_status.js');
+
 const pool = mysql.createPool({
     connectionLimit: 100,
     host     : process.env.DBHOST,
@@ -8,12 +10,12 @@ const pool = mysql.createPool({
   });
 
 let userDBscripts = require('./db-users.js')(pool);
-console.log('userDBscripts :>> ', userDBscripts);
 
 function getAllData(table){
   return new Promise((resolve)=>{
     try{
-      pool.query(`SELECT * FROM ?`,table,(err,data)=>{if(err){throw err}; resolve(data);});
+      pool.query(`SELECT * FROM ?`, table, (err,data)=>{ if(err){
+        throw err}; resolve(data); });
     }
     catch (err) {
       throw err;

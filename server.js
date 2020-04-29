@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 dotenv.config();
-
+console.log('\x1b[32m%s\x1b[0m','----------- starting new node.js session ------------------------');
 const express = require('express');
 const http = require('http');
 const https = require('https');
@@ -9,7 +9,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const dbScripts = require('./my_modules/db-scripts/db-scripts');
-const Fault = require('./my_modules/fault/fault.js');
+const Status = require('./my_modules/status/class_status.js');
 
 const jwt = require('jsonwebtoken');
 const myJWTsecret = process.env.JWTSECRET;
@@ -19,8 +19,7 @@ const HTTPPORT = process.env.HTTPPORT || 8323;
 const DOMAIN = process.env.DOMAIN || localhost
 
 
-console.log('dbScripts :>> ', dbScripts);
-//---- http server - will be redirected to https server ----
+//---- http server - http.html redirectes to https server ----
 const httpApp = express();
 const httpServer = http.createServer(httpApp);
 httpApp.get("*", (req, res, next) => {
@@ -133,7 +132,7 @@ app.post('/register', async (req,res)=>{
         console.log('registerResult in app.post(/register) :>> ', registerResult);
       }
       catch(err){
-        if (err instanceof Fault){
+        if (err instanceof Status){
           err.log();
           res.cookie('registerwarning', err.message||err.msg + '', {maxAge:1000});
           res.status(401).sendFile(__dirname+'/public/register.html');
