@@ -7,8 +7,8 @@ const pool = mysql.createPool({
     database : process.env.DATABASE
   });
 
-const userDBscripts = require('./db-users.js')(pool);
-
+let userDBscripts = require('./db-users.js')(pool);
+console.log('userDBscripts :>> ', userDBscripts);
 
 function getAllData(table){
   return new Promise((resolve)=>{

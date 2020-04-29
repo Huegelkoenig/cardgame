@@ -9,6 +9,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const dbScripts = require('./my_modules/db-scripts/db-scripts');
+const Fault = require('./my_modules/fault/fault.js');
 
 const jwt = require('jsonwebtoken');
 const myJWTsecret = process.env.JWTSECRET;
@@ -18,7 +19,7 @@ const HTTPPORT = process.env.HTTPPORT || 8323;
 const DOMAIN = process.env.DOMAIN || localhost
 
 
-
+console.log('dbScripts :>> ', dbScripts);
 //---- http server - will be redirected to https server ----
 const httpApp = express();
 const httpServer = http.createServer(httpApp);
@@ -64,7 +65,13 @@ app.get('/', (req,res,next) => {
     console.log('GET without valid cookie');
     res.status(200).sendFile(__dirname+'/public/login.html');  //sends loginFile
   }
-})
+});
+
+
+app.get('/register',(req,res)=>{
+  res.status(200).sendFile(__dirname+'/public/register.html');
+});
+
 
 app.post('/', async (req,res) => {
   console.log('received POST / request');
@@ -115,24 +122,34 @@ app.post('/', async (req,res) => {
     }
     
   }
-)
+);
 
 app.post('/register', async (req,res)=>{
   if (req.body.registerusername){
     if (req.body.registerpassword===req.body.registerrepeatpassword){
-      let registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail);
-      if (registerResult.state){
+      let registerResult;
+      try{
+        registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail);
+        console.log('registerResult in app.post(/register) :>> ', registerResult);
+      }
+      catch(err){
+        if (err instanceof Fault){
+          err.log();
+          res.cookie('registerwarning', err.message||err.msg + '', {maxAge:1000});
+          res.status(401).sendFile(__dirname+'/public/register.html');
+        }
+        
+      }
+      
+     
+      if (registerResult && registerResult.state){
         res.cookie('registerwarning', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
         res.cookie('success', true, {maxAge:1000});
         res.status(200).sendFile(__dirname + '/public/register.html');
       }
-      else{
-        res.cookie('registerwarning', registerResult.message, {maxAge:1000});
-        res.status(401).sendFile(__dirname+'/public/register.html');
-      }
     }
     else{
-      res.cookie('registerwarning', 'invalid credentials', {maxAge:1000});
+      res.cookie('registerwarning', 'passwords dont match', {maxAge:1000});
       res.status(401).sendFile(__dirname+'/public/register.html');    
     }
   }

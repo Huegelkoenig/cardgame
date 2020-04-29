@@ -1,11 +1,10 @@
-let Fault = require('../fault/fault.js').Fault;
+let Fault = require('../fault/fault.js');
 let pool;
 
 const TABLE = 'users';
 const USERNAME ='UserName';
 const EMAIL = 'UserEmail';
 const SESSIONID = 'SessionID';
-
 
 
 function getUserBy(type,value){
@@ -16,10 +15,17 @@ function getUserBy(type,value){
     break;
     case 'sessionID': type = SESSIONID;
     break;
-    default: throw new Error('PROGRAMMIERUNGSFEHLER! type must be \'name\', \'email\' or \'sessionID\'');
+    default: return new Promise((resolve,reject)=>{
+      reject(new Fault({file:'db-users.js', func: 'getUserBy()', line: 19, part: 'switch(type)', msg: `type is '${type}', but must be 'name', 'email' or 'sessionID'`}));
+    });      
   }
   return new Promise((resolve,reject)=>{
-    pool.query(`SELECT * FROM ${TABLE} WHERE ` + type + ` = ?;`,[value], (err,data)=>{if(err){reject(err)}; resolve(data);});
+    pool.query(`SELECT * FROM ${TABLE} WHERE ` + type + ` = ?;`, [value], (err,data)=>{
+      if(err){
+        reject(new Fault({file:'db-users.js', func: 'getUserBy()', line: 25, part: 'pool.query', msg: `pool.query threw an error.`, originalerror: err}));
+      };
+      resolve(data);
+    });
   });
 }
 
@@ -33,8 +39,8 @@ function getUserBy(type,value){
     // 3.1) if not: ask for new userdetails and break
     // 4) register user
  async function registerUser(name, password, email){
-   return new Promise(async (resolve)=>{
-  let sqlresult;
+   return new Promise(async (resolve,reject)=>{
+     let sqlresult;
 
   // 1) check if username is valid
   if (typeof name === 'string' && name.length>0 && name.match(/[a-z0-9]/ig).length==name.length){
@@ -43,7 +49,14 @@ function getUserBy(type,value){
       sqlresult = await getUserBy('username',name);
     }
     catch (err){
-      throw err;
+      if (err instanceof Fault){
+        err.log();
+      }
+      else{
+        console.log('error occured: ', err);
+        throw err;
+      }
+      
     }    
     if (typeof sqlresult === 'object' && Array.isArray(sqlresult) && sqlresult.length > 0){
       // TODO: ask for a new username
@@ -61,7 +74,7 @@ function getUserBy(type,value){
         try{
           pool.query(`INSERT INTO ${TABLE} (UserName, UserPassword, UserEmail) VALUES (?, ?, ?);`,[name, password, email],(err,data)=>{
             if (err){
-              throw(err);
+              reject(new Fault({file:'db-users.js', func: 'registerUser()', line: 77, part: 'pool.query', msg: `pool.query threw an error`, error: err}));
             }
             resolve({state: true, message: 'you registered succesfully'})
           });
@@ -76,7 +89,8 @@ function getUserBy(type,value){
     }
   }
   else{
-    return new Promise((resolve,reject)=>{resolve({state: false, message: 'invalid credentials'})});
+    console.log('db-users.js: line 87: invalid credentials at register');
+    reject({state: false, message: 'invalid credentials, nur a-zA-Z0-9'});
   }
 });
 }
@@ -94,8 +108,8 @@ function checkUserDetails(email, password){
 
 
 
-module.exports = (argpool) => { 
-  pool = argpool;
+module.exports = (arg) => { 
+  pool = arg;
   return {
   getUserBy,
   registerUser
