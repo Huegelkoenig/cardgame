@@ -100,7 +100,7 @@ class Status {
     clog(color,'^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
   }
 
-  addRethrow(msg){
+  rethrow(msg){
     let errordummy;
     let i=1;
     if (this.error){
@@ -112,6 +112,12 @@ class Status {
     }
     this['rethrow'+i] = msg;
     this.error = errordummy;
+  }
+
+  newUserMsg(msg,$_force=false){
+    if ($_force || !this.usermsg){
+      this.usermsg = msg;
+    }
   }
 }
 
