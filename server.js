@@ -113,7 +113,7 @@ app.post('/', async (req,res) => {
       }
     }
     catch (error){
-        console.log(`error Zeile ${117/*LL*/}:`, error);
+        console.log(`error Zeile ${116/*LL*/}:`, error);
         res.status(401).send('internal error');
     }
      
@@ -139,13 +139,13 @@ app.post('/register', async (req,res)=>{
       }
       
      
-      if (registerResult && registerResult.state){
+      if (registerResult && registerResult.status=='ok'){
         res.cookie('registerwarning', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
         res.cookie('success', true, {maxAge:1000});
         res.status(200).sendFile(__dirname + '/public/register.html');
       }
     else{
-      res.cookie('registerwarning', 'passwords dont match', {maxAge:1000});
+      res.cookie('registerwarning', 'passwords dont match or something else 148/*LL*/', {maxAge:1000});
       res.status(401).sendFile(__dirname+'/public/register.html');    
     }
   }
@@ -211,7 +211,6 @@ async function validateCredentials(req){
 
 server.listen(PORT || 8322, () => {
   console.log(`https listening on port ${PORT}`);
-  console.trace('hi');
  });
 
 

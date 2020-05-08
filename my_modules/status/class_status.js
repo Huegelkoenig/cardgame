@@ -99,6 +99,20 @@ class Status {
     Object.entries(this).forEach(([key,value])=>{clog(`\t${key}:\t`,value)});
     clog(color,'^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
   }
+
+  addRethrow(msg){
+    let errordummy;
+    let i=1;
+    if (this.error){
+      errordummy = this.error;
+      delete this.error;
+    }
+    while (this['rethrow'+i]){
+      i++;
+    }
+    this['rethrow'+i] = msg;
+    this.error = errordummy;
+  }
 }
 
 module.exports = Status;
