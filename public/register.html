@@ -9,15 +9,34 @@
   <p></p>
   <form id="register_form" action="/register" method="post">
       <p>register as a new user</p>
-      <input type="text" placeholder="Username" size="20" name="registerusername" required>
+      <input type="text" iplaceholder="Username" size="20" name="registerusername" required>
       <input type="email" placeholder="email" size="20" name="registeremail" required>
-      <input type="text" placeholder="Password" size="20" name="registerpassword" required>
-      <input type="text" placeholder="Repeat password" size="20" name="registerrepeatpassword" required>      
-       <input type="submit">
+      <input type="password" id="pw" placeholder="Password" size="20" name="registerpassword" required>
+      <input type="password" id="pwc" placeholder="Confirm password" size="20" name="registerpasswordconfirmation" required>      
+      <input type="submit" id="submit" disabled>
   </form>
-  <p id="warning"></p>
+  <p id="warning"><br></p>
   <a href="/">i am already registered. get me back to the login page</a>
   <script>
+    let pw = document.getElementById('pw');
+    let pwc = document.getElementById('pwc');
+    pw.addEventListener('keyup', validatePW);
+    pwc.addEventListener('keyup', validatePW);
+    function validatePW(){
+      console.log('pw.value :>> ', pw.value);
+      console.log('pwc.value :>> ', pwc.value);
+      if (pw.value === pwc.value){
+        document.getElementById('submit').disabled = false;
+        pwc.style.backgroundColor = '#FFFFFF';
+        document.getElementById('warning').innerHTML = '<br>';
+      }
+      else{
+        document.getElementById('submit').disabled = true;
+        pwc.style.backgroundColor = '#e34f52';
+        document.getElementById('warning').innerHTML = 'passwords missmatch';
+      }
+    }
+
     if (document.cookie){
       let warning = getCookie('registerwarning');
       if (warning && warning.length>=1){
@@ -31,7 +50,7 @@
     
 
 
-    function getCookie(cname) { //from W§schools.com
+    function getCookie(cname) { //from W3schools.com
   var name = cname + "=";
   var decodedCookie = decodeURIComponent(document.cookie);
   var ca = decodedCookie.split(';');

@@ -30,7 +30,6 @@ httpServer.listen(HTTPPORT || 8323,() => {
  });
 
 
-
 //---- https server ----------------------------------------
 const app = express();
 const server = https.createServer(
@@ -91,7 +90,6 @@ app.post('/', async (req,res) => {
     console.log('POST without valid cookie');
     // no cookie was set before, so this must be an login attemp
     console.log('User wants to log in. Checking Username and password');
-  
     try{
       if (await validateCredentials(req)){
         console.log('succesful');
@@ -105,6 +103,7 @@ app.post('/', async (req,res) => {
           domain: DOMAIN,
           path: '/'
         });
+        console.log('token :>> ', token);
         res.status(200).sendFile(__dirname + '/private/game.html');
       }
       else{
@@ -114,7 +113,7 @@ app.post('/', async (req,res) => {
       }
     }
     catch (error){
-        console.log('error Zeile 111:', error);
+        console.log(`error Zeile ${117/*LL*/}:`, error);
         res.status(401).send('internal error');
     }
      
@@ -124,11 +123,10 @@ app.post('/', async (req,res) => {
 );
 
 app.post('/register', async (req,res)=>{
-  if (req.body.registerusername){
-    if (req.body.registerpassword===req.body.registerrepeatpassword){
+    if (req.body.registerpassword===req.body.registerpasswordconfirmation){
       let registerResult;
       try{
-        registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail);
+        registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail, req.body.registerpasswordconfirmation);
         console.log('registerResult in app.post(/register) :>> ', registerResult);
       }
       catch(err){
@@ -146,7 +144,6 @@ app.post('/register', async (req,res)=>{
         res.cookie('success', true, {maxAge:1000});
         res.status(200).sendFile(__dirname + '/public/register.html');
       }
-    }
     else{
       res.cookie('registerwarning', 'passwords dont match', {maxAge:1000});
       res.status(401).sendFile(__dirname+'/public/register.html');    
@@ -214,6 +211,7 @@ async function validateCredentials(req){
 
 server.listen(PORT || 8322, () => {
   console.log(`https listening on port ${PORT}`);
+  console.trace('hi');
  });
 
 
@@ -248,6 +246,7 @@ io.use((socket, next) => {
 
 
 function checkUserCredentialsInDatabase(username, password){
+  console.trace('hh');
   //TODO:
   //hash password and salt with secret etc and check if they match
   return true;

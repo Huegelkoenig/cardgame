@@ -26,13 +26,14 @@ methods:
   .forceAppend(name, asset):  appends an asset object to the collection, overwrites may existing assets with the same name
       name... the name by which the asset is identified in the collection
       asset... an asset object
-  .load(srcfiles): preloads assets and appends them to the collection
+  .load(srcfiles, $_callback): preloads assets and appends them to the collection
       srcfiles... array containing one or multiple arrays of the form [type, name, force, src]
           type... the type of the asset. Must be 'img', 'audio' or 'video'   ('image' or 'sound' also allowed)
           name... the name by which the asset is identified in the collection
           force... true or false. if true, the asset will be forceappended. if false an Error will be thrown if an asset with the same name already exists in the collection
           src... a string  containing the src of the asset
-      ...continue with: collection.load(srcfiles).then( ...do something after assets have loaded, eg load more assets or start gameloop... )
+      $_callback
+      call this method like this: asset_collection.load(srcfiles).then( ...do something after assets have loaded, eg load more assets or start gameloop... )
           
     
 example:
@@ -62,14 +63,16 @@ class Asset_Collection extends Object{
     this[name] = asset;
   }
 
-  load(srcfiles){
+  load(srcfiles, $_callback=()=>{}){
     return Promise.all(srcfiles.map(async (entry)=>{
-      let promise = await loadAsset(entry[0],entry[3]); //TODO: await loadAsset(...).then(()=>{ ...customevent sends filesize for loadingbar... ; return asset})
-      this.append(entry[1], promise, entry[2]);
+      let promisedAsset = await loadAsset(entry[0],entry[3]).then((loadedAsset)=>{$_callback(loadedAsset); return loadedAsset;});
+      this.append(entry[1], promisedAsset, entry[2]);
       }));
                //name                      type     src        force 
   }
 }
+
+
 
 /*
 function loadAsset(src)

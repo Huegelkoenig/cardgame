@@ -1,7 +1,7 @@
 /*
 contains:
 class Animation: a simple class for animations
-class Animation_Collection: a class for a collection of animations (an object containing animations)
+class Animation_Collection: a class for a collection of animations (an Object containing animations)
 function newAnimation: checks the arguments and creates a new animation
 */
 
@@ -20,15 +20,17 @@ constructor arguments:
   shift... a Coords object describing the amount of pixels the animation shifts on each step, and the change of the size of the sprite (e.g. loading bar). Usually {x:width_of_sprite, y:0, width:0, height:0}
   duration... the duration in ms each cycle of the animation shall take
   sequence... an array containing the sequence of the animation, e.g. [0,1,2,3,4] for a simple animation,   or [0,1,0,2] for 'no step', 'left foot', 'no step', 'right foot'
-  innerOrigin... a Coords object that describes a part of the initial origin. Used eg, if there are gaps between different frames
+  $_innerOrigin... (optional) a Coords object that describes a part of the initial origin. Used eg, if there are gaps between different frames
                  eg: origin = {x:0, y:0, width: 100, height: 100}; innerOrigin = {x:20, y:30, width: 60, height: 50};  first sprite to drawn has origincoords(20,30,60,50), second sprite has origincoords(120,130,60,50)
-  cycleShift... a Coords object describing the amount of pixels the animation shifts after each cycle
+                 if false, innerOrigin will be set to {x:0,y:0,width: this.origin.width, height:this.origin.height}
+  cycleShift... (optional) a Coords object describing the amount of pixels the animation shifts after each cycle
   $_extraShift... (optional) a special kind of shift, which can be invoked anytime
   $_startCallback... (optional) a function to execute when teh animation starts
   $_repeats... (optional) the amount of repeats before the animation shall stop, standard is Infinity
   $_lastToDraw... (optional) the position in the sequence that shall be drawn, after the amount of cycles exceedes $_repeats
   $_finalCallback... (optional) a function to execute after the amount of cycles exceedes $_repeats
   $_cycleCallback... (optional) a function to execute after each cycle
+  $_hidden... (optional) i hidden===true, the animation will continue, but not be drawn
 
 methods:
   .render()
@@ -37,32 +39,21 @@ methods:
       ctx... the context of the canvas to draw to, e.g. ctx=canvas.getContext('2d')
       target... an Coords object {x: int, y: int [, width: int] [, height: int]} describing the position and size of the rendered sprite on the canvas
                      if width and/or height aren't given, the sprite will be drawn in its original size (this.sw and/or this.sh)
-  .start(cbv): starts the animation
-
-    this.last=Date.now();
-    this.running = true;
-  }
-
-  stop(){ //stops the animation immediatelly
-    this.running = false;
-    this.reset();
-  }
-
-  stopCycle(){
-    this.cycleCallback = () =>{
-      this.stop();
-    }
-  }
-
-  pause(){
-
-  }
-  resume(){
-    
-  }
+  .start(): starts the animation
+  .stop(): stops the animation immediatelly and resets all values to the initial state via .reset() (see below)
+  .stopCycle(): cllas .stop()after the actual cycle finished
+  .pause(): pauses the animation without resetting it
+  .resume(): resumes the animation. If the animation hasn't started yet, .start() will be called
+  .show(): unhides the animation
+  .hide(): hides the animation, but doesnt stp or pause it
+  .nextSprite(): the next sprite in the animation sequence will be called
+  .reset(): the animation will be reseted to the initial state
+  .change(newAnim, $_start=false): changes the animation to a new one
+      newAnim... an Animation object
+      $_start... (optional) if true, the new animation will be started, standard is false
 
 example:
-let myAnimation = new Animation(preloadedImages[2], {x:0, y:120, width:20, height:20}, 1300, 8, 0, 'normal', 0);
+let myAnimation = new Animation(preloadedImage, {x:0, y:120, width:60, height:60}, 1300, 8, 0, 'normal', 0);
 */
 
 class Animation{
@@ -107,50 +98,7 @@ class Animation{
     this.initial.hidden = $_hidden;
   }
 
-  change(newAnim,start=false){  //changes the whole animation to a new animation (and optionaly starts it)
-    this.img = newAnim.img;
-    this.origin = newAnim.origin;
-    this.shift = newAnim.shift;
-    this.duration = newAnim.duration;
-    this.sequence = newAnim.sequence;
-    this.innerOrigin = (newAnim.innerOrigin === false)?(newCoords(0,0,this.origin.width,this.origin.height)):(newAnim.innerOrigin);
-    this.cycleShift = (newAnim.cycleShift === false)?(this.cycleShift = newCoords(0,0,0,0)):(newAnim.cycleShift);
-    this.extraShift = (newAnim.extraShift === false)?( newCoords(0,0,0,0)):(newAnim.extraShift);
-    this.startCallback = newAnim.startCallback;
-    this.repeats = newAnim.repeats;
-    this.lastToDraw = newAnim.lastToDraw; 
-    this.finalCallback = newAnim.finalCallback;
-    this.cycleCallback = newAnim.cycleCallback;
-    this.progress = 0; //the actual progress of the sequence: this.sequence[this.progress]
-    this.counter = 0; //a counter how often the progress changed overall
-    this.cycleCounter = 0; // a counter how often the progress changed during this cycle
-    this.msps = this.duration/this.sequence.length || 1; //ms per sprite (ms until "next frame")
-    this.now = undefined; //the actual time (init only when animation starts)
-    this.last = undefined; //the time when the last frame was drawn (init only when animation starts)
-    this.running=false;  //true, if the animation is running
-    this.stopCycleVal=false;
-    this.hidden = newAnim.hidden;
-    this.started = false;
-    this.initial = {};
-    this.initial.origin = newAnim.origin;
-    this.initial.shift = newAnim.shift;
-    this.initial.duration = newAnim.duration;
-    this.initial.sequence = newAnim.sequence;
-    this.initial.innerOrigin = newAnim.innerOrigin;
-    this.initial.cycleShift = newAnim.cycleShift;
-    this.initial.extraShift = newAnim.extraShift;
-    this.initial.startCallback = newAnim.startCallback;
-    this.initial.repeats = newAnim.repeats;
-    this.initial.lastToDraw = newAnim.lastToDraw;
-    this.initial.finalCallback = newAnim.finalCallback;
-    this.initial.cycleCallback = newAnim.cycleCallback;
-    this.initial.hidden = newAnim.hidden;
-
-  if (start){
-    this.start();
-  }
-  }
-
+  
   render(ctx, target){
     if (!this.hidden){
       if (this.running){
@@ -183,7 +131,6 @@ class Animation{
         this.last = this.now;
       }
     }
-    //return new Promise((resolve)=>resolve());
   }  
 
   draw(ctx,target){
@@ -237,7 +184,6 @@ class Animation{
     this.hidden=true;
   }
 
-
   nextSprite(){ //will force the next sprite
     this.progress += 1;
     this.cycleCounter+= Math.floor(this.progress/this.sequence.length);
@@ -248,9 +194,9 @@ class Animation{
     else{
      this.progress = this.progress%this.sequence.length;
     }
-   }
+  }
 
-   reset(){ //resets the animation to initial state
+  reset(){ //resets the animation to initial state
     this.progress = 0;
     this.counter = 0;
     this.cycleCounter = 0;
@@ -271,11 +217,54 @@ class Animation{
     this.cycleCallback = this.initial.cycleCallback;
     this.hidden = this.initial.hidden;
     this.started = false;
-   }
+  }
 
-   resetCycle(){ //resets the animation after the cycle is completed
+  change(newAnim, $_start=false){  //changes the whole animation to a new animation (and optionaly starts it)
+    this.img = newAnim.img;
+    this.origin = newAnim.origin;
+    this.shift = newAnim.shift;
+    this.duration = newAnim.duration;
+    this.sequence = newAnim.sequence;
+    this.innerOrigin = (newAnim.innerOrigin === false)?(newCoords(0,0,this.origin.width,this.origin.height)):(newAnim.innerOrigin);
+    this.cycleShift = (newAnim.cycleShift === false)?(this.cycleShift = newCoords(0,0,0,0)):(newAnim.cycleShift);
+    this.extraShift = (newAnim.extraShift === false)?( newCoords(0,0,0,0)):(newAnim.extraShift);
+    this.startCallback = newAnim.startCallback;
+    this.repeats = newAnim.repeats;
+    this.lastToDraw = newAnim.lastToDraw; 
+    this.finalCallback = newAnim.finalCallback;
+    this.cycleCallback = newAnim.cycleCallback;
+    this.progress = 0; //the actual progress of the sequence: this.sequence[this.progress]
+    this.counter = 0; //a counter how often the progress changed overall
+    this.cycleCounter = 0; // a counter how often the progress changed during this cycle
+    this.msps = this.duration/this.sequence.length || 1; //ms per sprite (ms until "next frame")
+    this.now = undefined; //the actual time (init only when animation starts)
+    this.last = undefined; //the time when the last frame was drawn (init only when animation starts)
+    this.running=false;  //true, if the animation is running
+    this.stopCycleVal=false;
+    this.hidden = newAnim.hidden;
+    this.started = false;
+    this.initial = {};
+    this.initial.origin = newAnim.origin;
+    this.initial.shift = newAnim.shift;
+    this.initial.duration = newAnim.duration;
+    this.initial.sequence = newAnim.sequence;
+    this.initial.innerOrigin = newAnim.innerOrigin;
+    this.initial.cycleShift = newAnim.cycleShift;
+    this.initial.extraShift = newAnim.extraShift;
+    this.initial.startCallback = newAnim.startCallback;
+    this.initial.repeats = newAnim.repeats;
+    this.initial.lastToDraw = newAnim.lastToDraw;
+    this.initial.finalCallback = newAnim.finalCallback;
+    this.initial.cycleCallback = newAnim.cycleCallback;
+    this.initial.hidden = newAnim.hidden;
+    if ($_start){
+      this.start();
+    }
+  }
+
+  resetCycle(){ //resets the animation after the cycle is completed
       //TODO:
-   }
+  }
 }
 
 
@@ -292,11 +281,11 @@ constructor arguments:
 
 methods:
   .append(name, animation[, $_force=false]): appends a animation object to the collection
-      name... the name by which a animation is identified in the collection 
+      name... the name by which the animation is identified in the collection 
       animation... an object of the Animation class
-      $_force... (optional), if set to true, the method .forceAppend() will be executed. standard is false: if a animation with the same name already existst in the collection, an Error will be thrown
-  .forceAppend(name, animation):  appends a animation object to the collection, overwrites existing animations with the same name
-      name... the name by which a animation is identified in the collection 
+      $_force... (optional), if set to true, the method .forceAppend() will be executed. standard is false: if an animation with the same name already existst in the collection, an Error will be thrown
+  .forceAppend(name, animation):  appends an animation object to the collection, overwrites existing animations with the same name
+      name... the name by which the animation is identified in the collection 
       animation... an object of the Animation class
 
 example:

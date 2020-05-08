@@ -1,7 +1,7 @@
 window.onload = ()=>{
 
   let socket = io('https://localhost:8322', {query: {userID: undefined}, autoConnect: false});
-  document.getElementById('game').innerHTML = "here's the game";
+  document.getElementById('game').innerHTML = `here's the game`;
 
 
   xhttp = new XMLHttpRequest();
@@ -21,7 +21,7 @@ window.onload = ()=>{
       console.log('connect to socket :>> ');
       socket.connect(); 
       console.log('connected to socket :>> ');
-      //well, javascript could be haltet at the lines above be developer tools, but i think its saver to delete these her
+      //well, javascript could be haltet at the lines above by developer tools, but i think its saver to delete these here
       xhttp = undefined;
       socket.query.sessionID = undefined;
       socket.query.token = undefined

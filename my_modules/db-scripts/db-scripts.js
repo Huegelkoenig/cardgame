@@ -11,21 +11,36 @@ const pool = mysql.createPool({
 
 let userDBscripts = require('./db-users.js')(pool);
 
-function getAllData(table){
-  return new Promise((resolve)=>{
-    try{
-      pool.query(`SELECT * FROM ?`, table, (err,data)=>{ if(err){
-        throw err}; resolve(data); });
-    }
-    catch (err) {
-      throw err;
-    }     
-  });
+
+function getAllFrom(table){
+  return new Promise((resolve,reject)=>{
+     pool.query(`SELECT * FROM ?`, table, (err,data)=>{
+       if(err){
+         reject(new Status({status:'error', file:'db-scripts.js', func: 'getAllFrom()', line: 19/*LL*/, part: 'pool.query', msg: `pool.query threw an error`, error: err}));
+       };
+       resolve(data);
+    });
+})
 }
 
+/*
+/// testing
+(
+  async function(){
+  try{
+    console.log('answer\n',await userDBscripts.getUserBy('name','a'));
+  }
+  catch(err){
+    if (err instanceof Status){
+      err.log();
+    }
+    else{throw(err)}
+  }})();
+/// end testing
+*/
 
 module.exports = {
   getUserBy: userDBscripts.getUserBy,
   registerUser: userDBscripts.registerUser,
-  getAllData: getAllData
+  getAllFrom: getAllFrom
 }
