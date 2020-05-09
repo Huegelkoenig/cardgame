@@ -105,20 +105,20 @@ app.post('/', async (req,res) => {
         return;
       }
       else{
-        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${109/*LL*/}\n\terror:`, err);
+        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${108/*LL*/}\n\terror:`, err);
         res.cookie('loginmessage', 'Oups, something went wrong. Cant validate your credentials.', {maxAge:1000});
         res.status(401).sendFile(__dirname+'/public/login.html');
         return;
       }
     }
-    console.log('credentialsValid line ' + 115/*LL*/ + ' :>> ', credentialsValid);
+    console.log('credentialsValid line ' + 114/*LL*/ + ' :>> ', credentialsValid);
     if (credentialsValid){
       //login succesfull
       let token;
       token = jwt.sign({username: req.body.loginusername}, myJWTsecret);
       res.cookie('myAuthToken', token, {
-        maxAge: 3 * 1000, // would expire after x seconds  (x*1000)
-        httpOnly: true, // The cookie only accessible by the web server
+        maxAge: 3 * 1000, // expires after x seconds  (x*1000)
+        httpOnly: true, // the cookie is only accessible by the web server
         secure: true, // send only via https
         domain: DOMAIN,
         path: '/'
@@ -137,38 +137,39 @@ app.post('/', async (req,res) => {
 });
 
 app.post('/register', async (req,res)=>{
-  if (req.body.registerusername && req.body.registerpassword && req.body.registeremail && req.body.registerpasswordconfirmation){
+  if (req.body.registerusername && req.body.registerpassword && req.body.registeremail && req.body.registerpasswordconfirmation){//if not: first call of register.html (or wrong usage of POSTMAN)
     let registerResult;
     try{
       registerResult = await dbScripts.registerUser(req.body.registerusername, req.body.registerpassword, req.body.registeremail, req.body.registerpasswordconfirmation);
     }
     catch(err){
-      if (err instanceof Status){
-        err.log(`logging at server.js, app.post('/',...), line ${148/*LL*/}`);
+      if (err instanceof Status){ //registration denied due to invalid credentials
+        err.log(`logging at server.js, app.post('/',...), line ${147/*LL*/}`);
         res.cookie('registermessage', err.usermsg||err.usermessage||err.msg||err.message + '', {maxAge:1000});
         res.status(401).sendFile(__dirname+'/public/register.html');
         return;
       }
-      else{
+      else{ //registration denied due to an error
         res.cookie('registermessage', `Oups, there seems to be something wrong with the server. Maybe it is down!?`, {maxAge:1000});
         res.status(401).sendFile(__dirname+'/public/register.html');
         return;
       }
     }
-    if (registerResult && registerResult.status=='ok'){
+    if (registerResult && registerResult.status=='ok'){ //registration succesfull
       res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
       res.cookie('success', true, {maxAge:1000});
       res.status(200).sendFile(__dirname + '/public/register.html');
       return;
     }
-    else{
-      res.cookie('registermessage', `Oups, something went wrong. Unable to register.`, {maxAge:1000});
+    else{ //registration failed, but no error or rejection. This shouldn't happen.
+      new Status({status:'error', file:'server.js', func:"app.post('/register',...)", line:166/*LL*/, msg:"registration wasn't rejected, but registerResult.status!='ok'"}).log();
+      res.cookie('registermessage', `Something went wrong. Unable to register.`, {maxAge:1000});
       res.status(401).sendFile(__dirname+'/public/register.html');
       return;
     }
   }
-  else{
-    //first load of the register page
+  else {
+    //sending the register.html for the first time
     res.status(200).sendFile(__dirname+'/public/register.html');
     return;
   }
@@ -191,8 +192,10 @@ function validateCookieToken(req){
     console.log('token: ',token) //TODO:
     return true;
   }
-  console.log('(cookieToken nicht vorhanden, daher)');
-  return false;
+  else{
+    console.log('(cookieToken nicht vorhanden, daher)');
+    return false;
+  }
 }
 
 function validateCredentials(req){
@@ -215,13 +218,11 @@ function validateCredentials(req){
         resolve(true);
         return;
       }
-      else{
-        reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:224/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.'}));
-        return;
-      }
+      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:222/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.'}));
+      return;
     }
     else{
-      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:229/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
+      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:226/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
       return;
     }
   });

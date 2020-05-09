@@ -66,7 +66,8 @@ arguments:
   maxLength... the maximum length of the string
   $_regex... (optional) a regular expression for allowed characters to check against, $_regex MUST have a global flag //g
 return:
-  if the string is valid: true,  else: false
+  if the string is valid: resolve(true)
+  if the string is invalid: reject()
 */
 function validateString(string, minLength, maxLength, $_regex = undefined){
   return new Promise((resolve,reject)=>{
@@ -118,7 +119,6 @@ arguments:
 return:
   true, if the email is valid, false if it isn't
 */
-
  function registerUser(name, password, email, passwordconfirmation){
   return new Promise(async (resolve,reject)=>{
     //1) check if username, password, passwordconfirmation and email are valid
@@ -133,7 +133,7 @@ return:
         return;
       }
       reject(new Status({status:'error', file:'db-users.js', func:'registerUser()', line:135/*LL*/, msg:'error while validating username', usermsg:`Oups, something went wrong.`}));
-      return;     
+      return;
     }
     try{
       await validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH);
