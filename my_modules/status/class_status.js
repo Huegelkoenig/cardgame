@@ -85,7 +85,7 @@ class Status {
       color='\x1b[1;31m%s\x1b[0m'; //light red
       clog=console.error;
     }
-    else if (this.status=='warning'){
+    else if (this.status=='warning' || this.status=='denied' || this.status=='rejected'){
       color='\x1b[33m%s\x1b[0m'; //yellow
       clog=console.warn;
     }

@@ -70,14 +70,7 @@ return:
   if the string is invalid: reject()
 */
 function validateString(string, minLength, maxLength, $_regex = undefined){
-  return new Promise((resolve,reject)=>{
-    if ((string &&  typeof string==='string' && string.length>=minLength && string.length<=maxLength && (!$_regex || ($_regex && string.match($_regex).length===string.length)))){
-      resolve(true);
-      return;
-    }
-    reject(new Status({status:'denied', file:'db-users.js', func:'validateString()', line:77/*LL*/, msg:`The provided string ${string} is invalid.`}));
-    return;    
-  });
+  return (string &&  typeof string === 'string' && string.length>=minLength && string.length<=maxLength && (!$_regex || ($_regex && string.match($_regex).length===string.length)));
 }
 
 
@@ -93,16 +86,13 @@ return:
 */
 
 function validateEmail(email){
-  return new Promise((resolve,reject)=>{
-    if (email && typeof email==='string' && email.length<=MAX_EMAIL_LENGTH && email.match(/^[0-9a-z]+[0-9a-z._%+]*@[0-9a-z.-]+\.[a-z]{2,}/i)[0]===email && email.match(/[.]{2,}/) === null){
-      resolve(true);
-      return;
+  if (email && typeof email==='string' && email.length<=MAX_EMAIL_LENGTH ){
+    let emailmatch = email.match(/^[0-9a-z]+[0-9a-z._%+]*@[0-9a-z.-]+\.[a-z]{2,}/i);
+    if (emailmatch != null && emailmatch[0]===email && email.match(/[.]{2,}/) === null){
+      return true;
     }
-    else{
-      reject(new Status({status:'denied', file:'db-users.js', func:'validateEmail', line:101/*LL*/, msg:`The provided email ${email} is invalid.`, usermsg:`The provided email ${email} is invalid.`}));
-      return;
-    }
-  });
+  }
+  return false;
 }
 
 
@@ -122,49 +112,23 @@ return:
  function registerUser(name, password, email, passwordconfirmation){
   return new Promise(async (resolve,reject)=>{
     //1) check if username, password, passwordconfirmation and email are valid
-    try{
-      await validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS);
-    }
-    catch(err){
-      if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${130/*LL*/}`);
-        err.newUserMsg(`The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`);
-        reject(err);
-        return;
-      }
-      reject(new Status({status:'error', file:'db-users.js', func:'registerUser()', line:135/*LL*/, msg:'error while validating username', usermsg:`Oups, something went wrong.`}));
+    if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
+      reject(new Status({status:'denied', file:'db-users.js', func:'registerUser()', line:110/*LL*/, usermsg:`Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`}));
       return;
     }
-    try{
-      await validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH);
-    }
-    catch(err){
-      if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${143/*LL*/}`);
-        err.newUserMsg(`The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`);
-        reject(err);
-        return;
-      }
-      reject(new Status({status:'error', file:'db-users.js', func:'registerUser()', line:148/*LL*/, msg:'error while validating password', usermsg:`Oups, something went wrong.`}));
+    else if (!validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
+      reject(new Status({status:'denied', file:'db-users.js', func:'registerUser()', line:114/*LL*/, usermsg:`Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`}));
       return;
     }
-    if (password !== passwordconfirmation){
-      reject(new Status({status:'denied', usermsg:`The confirmation doesn't match the password. Please re-enter your password and confirm it.`}));
+    else if (password !== passwordconfirmation){
+      reject(new Status({status:'denied', file:'db-users.js', func:'registerUser()', line:118/*LL*/, usermsg:`Registration aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`}));
       return;
     }
-    try{
-      await validateEmail(email);
-    }
-    catch(err){
-      if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${160/*LL*/}`);
-        err.newUserMsg('The provided emailadress is invalid');
-        reject(err)
-        return;
-      }
-      reject(new Status({status:'error', file: 'db-users.js', func:'registerUser()', line:165/*LL*/, msg:`validateEmail threw an error, see details below`, usermsg:'Oups, something went wrong', error: err}));
+    else if (!validateEmail(email)){
+      reject(new Status({status:'denied', file:'db-users.js', func:'registerUser()', line:122/*LL*/, usermsg:'Registration aborted! The provided emailadress seems to be invalid'}));
       return;
     }
+    else {
     // 2) check if username already exists in DB
     let sqlresult;
     try{
@@ -172,32 +136,33 @@ return:
     }
     catch(err){ // some error occured while querying the DB
       if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${175/*LL*/}`);
+        err.rethrow(`at db-users.js, registerUser(), line ${133/*LL*/}`);
         err.newUserMsg('Oups, something went wrong! Maybe the database server is down!?');
         reject(err);
         return;
       }
-      reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 180/*LL*/, part: '2) check username', msg: `an error occured, see .error for details`, usermsg:'Oups, something went wrong! Maybe the database server is down!?', error: err}));
+      reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 138/*LL*/, part: '2) check username', msg: `an error occured, see .error for details`, usermsg:'Oups, something went wrong! Maybe the database server is down!?', error: err}));
       return;
     }
     if (typeof sqlresult !== 'object' || !Array.isArray(sqlresult.data)){ //query returned wrong datatype
-      reject (new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 184/*LL*/, msg: `sqlresult has wrong datatype`, usermsg:'Oups, something went wrong!', sqlresult: sqlresult}));
+      reject (new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 142/*LL*/, msg: `sqlresult has wrong datatype`, usermsg:'Oups, something went wrong!', sqlresult: sqlresult}));
       return;
     }
     if (sqlresult.data.length >= 1){//username is already taken
-      reject (new Status({status:'denied', file:'db-users.js', func: 'registerUser()', line: 188/*LL*/, msg: `User ${name} already exists. Please try another one.`, usermsg:`User ${name} already exists. Please try another one.`}));
+      reject (new Status({status:'denied', file:'db-users.js', func: 'registerUser()', line: 146/*LL*/, msg: `User ${name} already exists. Please try another one.`, usermsg:`User ${name} already exists. Please try another one.`}));
       return;
     }
     //3) everything seems ok, register user
     pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, password, email],
       (err,data)=>{
         if (err){
-          reject(new Status({status:'error', file:'db-users.js', func: 'registerUser(...)', part: '3) register user', line: 195/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
+          reject(new Status({status:'error', file:'db-users.js', func: 'registerUser(...)', part: '3) register user', line: 153/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
           return;
         }
         resolve({status: 'ok', data:data});
         return;
     });
+    }
   });
 }
 
