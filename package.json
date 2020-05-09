@@ -1,6 +1,6 @@
 {
   "name": "cardgame",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "A simple pvp cardgame created with Javascript, node.js and socket.io",
   "main": "server.js",
   "scripts": {

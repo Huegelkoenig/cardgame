@@ -57,17 +57,20 @@ app.get('/', (req,res,next) => {
       path: '/'
     });
     res.status(200).sendFile(__dirname + '/private/game.html'); //TODO:
+    return;
   }  
   else{
   // no cookie => no authorization => need to login on index.html
     console.log('GET without valid cookie');
     res.status(200).sendFile(__dirname+'/public/login.html');  //sends loginFile
+    return;
   }
 });
 
 
 app.get('/register',(req,res)=>{
   res.status(200).sendFile(__dirname+'/public/register.html');
+  return;
 });
 
 
@@ -96,14 +99,19 @@ app.post('/', async (req,res) => {
     }
     catch (err){
       if (err instanceof Status){
-        err.log();
-        res.status(401).send(err.usermsg); //TODO:
+        err.log(`logging at server.js, app.post('/',...), line ${102/*LL*/}`);
+        res.cookie('loginmessage', err.usermsg||err.usermessage||err.msg||err.message + '', {maxAge:1000});
+        res.status(401).sendFile(__dirname+'/public/login.html');
+        return;
       }
       else{
-        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${103/*LL*/}\n\terror:`, err);
-        res.status(401).send('enexpected error'); //TODO:
+        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${109/*LL*/}\n\terror:`, err);
+        res.cookie('loginmessage', 'Oups, something went wrong. Cant validate your credentials.', {maxAge:1000});
+        res.status(401).sendFile(__dirname+'/public/login.html');
+        return;
       }
     }
+    console.log('credentialsValid line ' + 115/*LL*/ + ' :>> ', credentialsValid);
     if (credentialsValid){
       //login succesfull
       let token;
@@ -116,10 +124,13 @@ app.post('/', async (req,res) => {
         path: '/'
       });
       res.status(200).sendFile(__dirname + '/private/game.html');
+      return;
     }
     else{
       console.log({error: 'not succesful. Wrong username or password'});
-      res.status(401).send('login credentials not correct'); //TODO:
+      res.cookie('loginmessage', 'login failed: wrong username or password', {maxAge:1000});
+      res.status(401).sendFile(__dirname+'/public/login.html');
+      return;
       //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
     }
   }
@@ -133,7 +144,7 @@ app.post('/register', async (req,res)=>{
     }
     catch(err){
       if (err instanceof Status){
-        err.log();
+        err.log(`logging at server.js, app.post('/',...), line ${148/*LL*/}`);
         res.cookie('registermessage', err.usermsg||err.usermessage||err.msg||err.message + '', {maxAge:1000});
         res.status(401).sendFile(__dirname+'/public/register.html');
         return;
@@ -148,15 +159,18 @@ app.post('/register', async (req,res)=>{
       res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
       res.cookie('success', true, {maxAge:1000});
       res.status(200).sendFile(__dirname + '/public/register.html');
+      return;
     }
     else{
       res.cookie('registermessage', `Oups, something went wrong. Unable to register.`, {maxAge:1000});
-      res.status(401).sendFile(__dirname+'/public/register.html');    
+      res.status(401).sendFile(__dirname+'/public/register.html');
+      return;
     }
   }
   else{
     //first load of the register page
     res.status(200).sendFile(__dirname+'/public/register.html');
+    return;
   }
 });
 
@@ -183,28 +197,33 @@ function validateCookieToken(req){
 
 function validateCredentials(req){
   return new Promise(async (resolve,reject)=>{
-  if (req.body.loginusername && req.body.loginpassword){
-    let sqlResult;
-    try{
-      sqlResult = await dbScripts.getUserBy('name',req.body.loginusername)
-    }
-    catch(err){
-      if (err instanceof Status){
-        err.rethrow(`at server.js, validateCredentials(), line ${193/*LL*/}`);
-        reject(err);
+    if (req.body.loginusername && req.body.loginpassword){
+      let sqlResult;
+      try{
+        sqlResult = await dbScripts.getUserBy('name',req.body.loginusername);
+      }
+      catch(err){
+        if (err instanceof Status){
+          err.rethrow(`at server.js, validateCredentials(), line ${211/*LL*/}`);
+          reject(err);
+          return;
+        }
+        reject(new Status({status:'error', file:'server.js', function:'validateCredentials()', line:215/*LL*/, msg:'see error message', error:err}));
         return;
       }
-      reject(new Status({status:'error', file:'server.js', function:'validateCredentials()', line:197/*LL*/, msg:'see error message', error:err}));
+      if (sqlResult.data.length == 1 && sqlResult.data[0]['UserName'] == req.body.loginusername && sqlResult.data[0]['UserPassword'] == req.body.loginpassword){
+        resolve(true);
+        return;
+      }
+      else{
+        reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:224/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.'}));
+        return;
+      }
+    }
+    else{
+      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:229/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
       return;
     }
-    console.log('sqlResult.data line:>> ' + 200/*LL*/+' :', sqlResult.data);
-    if (sqlResult.data.length == 1 && sqlResult.data[0]['UserName'] == req.body.loginusername && sqlResult.data[0]['UserPassword'] == req.body.loginpassword){
-      resolve(true);
-      return;
-    }
-  }
-  reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:206/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
-  return;
   });
 }
 

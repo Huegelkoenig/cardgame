@@ -80,36 +80,33 @@ class Status {
     if (this.status=='error'){
       color='\x1b[31m%s\x1b[0m'; //red
       clog=console.error;
-      args.unshift('An Error occured!');
     }
-    if (this.status=='exception'){
+    else if (this.status=='exception'){
       color='\x1b[1;31m%s\x1b[0m'; //light red
       clog=console.error;
-      args.unshift('An Exception occured!');
     }
-    if (this.status=='warning'){
+    else if (this.status=='warning'){
       color='\x1b[33m%s\x1b[0m'; //yellow
       clog=console.warn;
-      args.unshift('Warning!');
     }
-    clog(color,'vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-    args.forEach(arg=>{clog('   ' + arg)});    
+    clog(color,'vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');  
     Object.entries(this).forEach(([key,value])=>{clog(`\t${key}:\t`,value)});
+    args.forEach(arg=>{clog('   ' + arg)});  
     clog(color,'^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
   }
 
   rethrow(msg){
     let errordummy;
     let i=1;
-    if (this.error){
-      errordummy = this.error;
-      delete this.error;
-    }
+   // if (this.error){
+   //   errordummy = this.error;
+   //   delete this.error;
+   // }
     while (this['rethrow'+i]){
       i++;
     }
     this['rethrow'+i] = msg;
-    this.error = errordummy;
+   // this.error = errordummy;
   }
 
   newUserMsg(msg,$_force=false){

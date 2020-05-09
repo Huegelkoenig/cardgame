@@ -37,7 +37,7 @@ function getUserBy(type, comparative){
     case 'socketID': type = SESSIONID;
     break;
     default: return new Promise((resolve,reject)=>{
-      reject(new Status({status:'error', file:'db-users.js', func: 'getUserBy()', line: 41/*LL*/, msg: `TYPO when calling getUserBy(type,...): argument 'type' is '${type}', but must be 'name', 'email', 'sessionID' or 'socketID'`, usermsg:"Oups, i'm unable to check the database. There seems to be a typo in my code."}));
+      reject(new Status({status:'error', file:'db-users.js', func: 'getUserBy()', line: 40/*LL*/, msg: `TYPO when calling getUserBy(type,...gitup none ): argument 'type' is '${type}', but must be 'name', 'email', 'sessionID' or 'socketID'`, usermsg:"Oups, i'm unable to check the database. There seems to be a typo in my code."}));
       return;
     });
   }
@@ -45,7 +45,7 @@ function getUserBy(type, comparative){
     pool.query(`SELECT ${USERNAME}, ${EMAIL}, ${PASSWORD}, ${SESSIONID}, ${SOCKETID} FROM ${TABLE} WHERE ` + type + ' = ?;', [comparative],
       (err,data)=>{
         if(err){
-          reject(new Status({status:'error', file:'db-users.js', func: 'getUserBy()', line: 48/*LL*/, msg: `pool.query threw an error, see .error for details`, usermsg:'Oups, something went wrong! Maybe the server is down!?', error: err}));
+          reject(new Status({status:'error', file:'db-users.js', func: 'getUserBy()', line: 48/*LL*/, msg: `pool.query threw an error, see .error for details`, usermsg:'Oups, something went wrong! Maybe the database server is down!?', error: err}));
           return;
         }
         resolve({status:'ok', data:data});
@@ -74,7 +74,7 @@ function validateString(string, minLength, maxLength, $_regex = undefined){
       resolve(true);
       return;
     }
-    reject(new Status({status:'denied', file:'db-users.js', func:'validateString()', line:78/*LL*/, msg:`The provided string ${string} is invalid.`}));
+    reject(new Status({status:'denied', file:'db-users.js', func:'validateString()', line:77/*LL*/, msg:`The provided string ${string} is invalid.`}));
     return;    
   });
 }
@@ -98,7 +98,7 @@ function validateEmail(email){
       return;
     }
     else{
-      reject(new Status({status:'denied', file:'db-users.js', func:'validateEmail', line:102/*LL*/, msg:`The provided email ${email} is invalid.`, usermsg:`The provided email ${email} is invalid.`}));
+      reject(new Status({status:'denied', file:'db-users.js', func:'validateEmail', line:101/*LL*/, msg:`The provided email ${email} is invalid.`, usermsg:`The provided email ${email} is invalid.`}));
       return;
     }
   });
@@ -157,12 +157,12 @@ return:
     }
     catch(err){
       if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${159/*LL*/}`);
+        err.rethrow(`at db-users.js, registerUser(), line ${160/*LL*/}`);
         err.newUserMsg('The provided emailadress is invalid');
         reject(err)
         return;
       }
-      reject(new Status({status:'error', file: 'db-users.js', func:'registerUser()', line:164/*LL*/, msg:`validateEmail threw an error, see details below`, usermsg:'Oups, something went wrong', error: err}));
+      reject(new Status({status:'error', file: 'db-users.js', func:'registerUser()', line:165/*LL*/, msg:`validateEmail threw an error, see details below`, usermsg:'Oups, something went wrong', error: err}));
       return;
     }
     // 2) check if username already exists in DB
@@ -172,27 +172,27 @@ return:
     }
     catch(err){ // some error occured while querying the DB
       if (err instanceof Status){
-        err.rethrow(`at db-users.js, registerUser(), line ${174/*LL*/}`);
-        err.newUserMsg('Oups, something went wrong! Maybe the server is down!?');
+        err.rethrow(`at db-users.js, registerUser(), line ${175/*LL*/}`);
+        err.newUserMsg('Oups, something went wrong! Maybe the database server is down!?');
         reject(err);
         return;
       }
-      reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 178/*LL*/, part: '2) check username', msg: `an error occured, see .error for details`, usermsg:'Oups, something went wrong! Maybe the server is down!?', error: err}));
+      reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 180/*LL*/, part: '2) check username', msg: `an error occured, see .error for details`, usermsg:'Oups, something went wrong! Maybe the database server is down!?', error: err}));
       return;
     }
     if (typeof sqlresult !== 'object' || !Array.isArray(sqlresult.data)){ //query returned wrong datatype
-      reject (new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 181/*LL*/, msg: `sqlresult has wrong datatype`, usermsg:'Oups, something went wrong!', sqlresult: sqlresult}));
+      reject (new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 184/*LL*/, msg: `sqlresult has wrong datatype`, usermsg:'Oups, something went wrong!', sqlresult: sqlresult}));
       return;
     }
     if (sqlresult.data.length >= 1){//username is already taken
-      reject (new Status({status:'denied', file:'db-users.js', func: 'registerUser()', line: 184/*LL*/, msg: `User ${name} already exists. Please try another one.`, usermsg:`User ${name} already exists. Please try another one.`}));
+      reject (new Status({status:'denied', file:'db-users.js', func: 'registerUser()', line: 188/*LL*/, msg: `User ${name} already exists. Please try another one.`, usermsg:`User ${name} already exists. Please try another one.`}));
       return;
     }
     //3) everything seems ok, register user
     pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, password, email],
       (err,data)=>{
         if (err){
-          reject(new Status({status:'error', file:'db-users.js', func: 'registerUser(...)', part: '3) register user', line: 190/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
+          reject(new Status({status:'error', file:'db-users.js', func: 'registerUser(...)', part: '3) register user', line: 195/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
           return;
         }
         resolve({status: 'ok', data:data});
