@@ -17,8 +17,10 @@ function getAllFrom(table){
      pool.query(`SELECT * FROM ?`, table, (err,data)=>{
        if(err){
          reject(new Status({status:'error', file:'db-scripts.js', func: 'getAllFrom()', line: 19/*LL*/, msg: `pool.query threw an error`, error: err}));
+         return;
        }
        resolve(data);
+       return;
     });
 })
 }

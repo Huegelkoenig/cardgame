@@ -90,43 +90,40 @@ app.post('/', async (req,res) => {
     console.log('POST without valid cookie');
     // no cookie was set before, so this must be an login attemp
     console.log('User wants to log in. Checking Username and password');
+    let credentialsValid;
     try{
-      if (await validateCredentials(req)){
-        console.log('succesful');
-        //login succesfull
-        let token;
-        token = jwt.sign({username: req.body.loginusername}, myJWTsecret);
-        res.cookie('myAuthToken', token, {
-          maxAge: 3 * 1000, // would expire after x seconds  (x*1000)
-          httpOnly: true, // The cookie only accessible by the web server
-          secure: true, // send only via https
-          domain: DOMAIN,
-          path: '/'
-        });
-        console.log('token :>> ', token);
-        res.status(200).sendFile(__dirname + '/private/game.html');
-      }
-      else{
-        console.log({error: 'not succesful. Wrong username or password'});
-        res.status(401).send('login credentials not correct');
-        //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
-      }
+      credentialsValid = await validateCredentials(req);
     }
     catch (err){
       if (err instanceof Status){
         err.log();
-        res.status(401).send(err.usermsg);
+        res.status(401).send(err.usermsg); //TODO:
       }
       else{
-        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${121/*LL*/}\n\terror:`, err);
-        res.status(401).send('enexpected error');
+        console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${103/*LL*/}\n\terror:`, err);
+        res.status(401).send('enexpected error'); //TODO:
       }
     }
-     
+    if (credentialsValid){
+      //login succesfull
+      let token;
+      token = jwt.sign({username: req.body.loginusername}, myJWTsecret);
+      res.cookie('myAuthToken', token, {
+        maxAge: 3 * 1000, // would expire after x seconds  (x*1000)
+        httpOnly: true, // The cookie only accessible by the web server
+        secure: true, // send only via https
+        domain: DOMAIN,
+        path: '/'
+      });
+      res.status(200).sendFile(__dirname + '/private/game.html');
     }
-    
+    else{
+      console.log({error: 'not succesful. Wrong username or password'});
+      res.status(401).send('login credentials not correct'); //TODO:
+      //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
+    }
   }
-);
+});
 
 app.post('/register', async (req,res)=>{
   if (req.body.registerusername && req.body.registerpassword && req.body.registeremail && req.body.registerpasswordconfirmation){
@@ -184,32 +181,31 @@ function validateCookieToken(req){
   return false;
 }
 
-async function validateCredentials(req){
-  //validate username and password
-  console.log('validating credentials:');
+function validateCredentials(req){
+  return new Promise(async (resolve,reject)=>{
   if (req.body.loginusername && req.body.loginpassword){
-    console.log('username: ', req.body.loginusername);
-    console.log('password: ', req.body.loginpassword);
     let sqlResult;
     try{
       sqlResult = await dbScripts.getUserBy('name',req.body.loginusername)
     }
     catch(err){
       if (err instanceof Status){
-        err.log();
-        err.rethrow(`at server.js, validateCredentials(), line ${200/*LL*/}`);
+        err.rethrow(`at server.js, validateCredentials(), line ${193/*LL*/}`);
+        reject(err);
+        return;
       }
-      else{
-        console.log('\nunhandled error\nthrowing it back:>>\n ', error);
-        throw error;
-      }  
+      reject(new Status({status:'error', file:'server.js', function:'validateCredentials()', line:197/*LL*/, msg:'see error message', error:err}));
+      return;
     }
-
+    console.log('sqlResult.data line:>> ' + 200/*LL*/+' :', sqlResult.data);
     if (sqlResult.data.length == 1 && sqlResult.data[0]['UserName'] == req.body.loginusername && sqlResult.data[0]['UserPassword'] == req.body.loginpassword){
-      return true;
+      resolve(true);
+      return;
     }
   }
-  return false;
+  reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:206/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
+  return;
+  });
 }
 
 

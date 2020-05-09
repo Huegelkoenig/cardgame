@@ -22,7 +22,7 @@ constructor argument:
 methods:
   .log(...): logs the (optional) arguments first and then the key value pairs stored in this object to the console
              Each status.log will be surrounded by colored seperators.
-             If this.status=='error' (=='Fault', =='warning') the color will be changed to red (light red, yellow), standard is blue.
+             If this.status=='error' (=='Error', =='Exception', =='warning') the color will be changed to red (light red, yellow), standard is blue.
       
 example:
 function myFunction(arg1,arg2,arg3){
@@ -32,12 +32,11 @@ function myFunction(arg1,arg2,arg3){
   }
   catch(err){
     //if you don't want to handle the error here...
-    throw new Status({status:'error' file:'file.js', function:`myFunction(${arguments})`, line:33, message:'Something went wrong', error:err, throw:false, callback:(val1,val2)=>{doSomethingElse(val1,val2)} });
+    throw new Status({status:'error' file:'file.js', function:`myFunction(${arguments})`, line:35, message:'Something went wrong', error:err, throw:false, callback:(val1,val2)=>{doSomethingElse(val1,val2)} });
   }
   ...
 }
-
-//...but here (may be in another file)
+//...but may be in another file
 try{
   myFunction()
 }
@@ -56,7 +55,6 @@ catch(err){
   }
 }
 */
-
 
 class Status {
   constructor(arg){
@@ -84,10 +82,10 @@ class Status {
       clog=console.error;
       args.unshift('An Error occured!');
     }
-    if (this.status=='fault'){
+    if (this.status=='exception'){
       color='\x1b[1;31m%s\x1b[0m'; //light red
       clog=console.error;
-      args.unshift('A Fault occured!');
+      args.unshift('An Exception occured!');
     }
     if (this.status=='warning'){
       color='\x1b[33m%s\x1b[0m'; //yellow
