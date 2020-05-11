@@ -135,6 +135,7 @@ arguments:
 return:
   nothing, but the user will load a file (TODO: single page application) with a specific message, stating what happened or what went wrong
 */ 
+//TODO: hash passwords with bcrypt
 async function registerUser(req,res){
   //1) check if username, password, passwordconfirmation (and email if provided) are valid
   let name = req.body.registerusername;
@@ -142,27 +143,27 @@ async function registerUser(req,res){
   let email = req.body.registeremail.length>0?req.body.registeremail:null; //if no email is provided, req.body.registeremail == '' , thus will be set to null
   let passwordconfirmation = req.body.registerpasswordconfirmation;
   if (!name || !password || !passwordconfirmation){ //insufficient credentials (must be wrong usage of POSTMAN ;-D), sending register.html again
-    res.cookie('registermessage', 'Please enter username and password and also confirm the password. Email is optional.', {maxAge:1000});
+    res.cookie('registermessage', 'Please enter username and password and also confirm the password. Email is optional.', {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
-    res.cookie('registermessage', `Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`, {maxAge:1000});
+    res.cookie('registermessage', `Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (!validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
-    res.cookie('registermessage', `Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`, {maxAge:1000});
+    res.cookie('registermessage', `Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (password !== passwordconfirmation){
-    res.cookie('registermessage', `Registration aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`, {maxAge:1000});
+    res.cookie('registermessage', `Registration aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (email && !validateEmail(email)){
-    res.cookie('registermessage', 'Registration aborted! The provided emailadress seems to be invalid', {maxAge:1000});
+    res.cookie('registermessage', 'Registration aborted! The provided emailadress seems to be invalid', {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
@@ -172,7 +173,7 @@ async function registerUser(req,res){
     let salt = createSalt(16);
     let registerResult;
     try{
-      registerResult = await new Promise(async (resolve,reject)=>{        
+      registerResult = await new Promise(async (resolve,reject)=>{
         pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}, salt) VALUES (?, ?, ?, ?);`, [name, password, email, salt],
           (err,data)=>{
             if (err){
@@ -180,7 +181,7 @@ async function registerUser(req,res){
                 reject(new Status({status:'denied'}));
                 return;
               }
-              reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 164/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
+              reject(new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 184/*LL*/, msg: `pool.query threw an error, see .error for details`, error: err}));
               return;
             }
             resolve({status: 'ok', data:data});
@@ -191,33 +192,33 @@ async function registerUser(req,res){
     catch(err){
       if (err instanceof Status){ //registration denied due to invalid credentials
         if (err.status == 'denied'){
-          res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000});
+          res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
           res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
           return;
         }
-        err.log(`logging at db-users.js, app.post('/',...), line ${179/*LL*/}`);
-        res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${180/*LL*/}`, {maxAge:1000});
+        err.log(`logging at db-users.js, app.post('/',...), line ${199/*LL*/}`);
+        res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${200/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
       else{ //registration denied due to an error that shouldnt happen... DELETE:???
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 185/*LL*/, msg: 'something went wrong where nothing should went wrong', err: error})
-                .log(`logging at db-users.js, registerUser() line ${186/*LL*/}`);
-        res.cookie('registermessage',  `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${187/*LL*/}`, {maxAge:1000});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 205/*LL*/, msg: 'something went wrong where nothing should went wrong', err: error})
+                .log(`logging at db-users.js, registerUser() line ${206/*LL*/}`);
+        res.cookie('registermessage',  `Oups, this shouldn't happen. Error Code  ${207/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
     }
     if (registerResult && registerResult.status=='ok'){ //registration succesfull
-      res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000});
-      res.cookie('success', true, {maxAge:1000});
+      res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
+      res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
       res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
       return;
     }
     else{ //registration failed, but no error or rejection. This shouldn't happen. DELETE:???
-      new Status({status:'error', file:'db-users.js', func:"registerUser()", line:199/*LL*/, msg:"registration wasn't rejected, but registerResult.status!='ok'"})
-                .log(`logging at db-users.js, registerUser(), line ${200/*LL*/}`);
-      res.cookie('registermessage', `Oups, unable to register. There seems to be something wrong with our database. ErrorCode ${201/*LL*/}`, {maxAge:1000});
+      new Status({status:'error', file:'db-users.js', func:"registerUser()", line:219/*LL*/, msg:"registration wasn't rejected, but registerResult.status!='ok'"})
+                .log(`logging at db-users.js, registerUser(), line ${220/*LL*/}`);
+      res.cookie('registermessage', `Oups, unable to register. There seems to be something wrong with our database. ErrorCode ${221/*LL*/}`, {maxAge:1000});
       res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
       return;
     }

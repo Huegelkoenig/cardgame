@@ -18,13 +18,12 @@
   <p id="warning"><br></p>
   <a href="/">i am already registered. get me back to the login page</a>
   <script>
+window.onload = ()=>{
     let pw = document.getElementById('pw');
     let pwc = document.getElementById('pwc');
     pw.addEventListener('keyup', validatePW);
     pwc.addEventListener('keyup', validatePW);
     function validatePW(){
-      console.log('pw.value :>> ', pw.value);
-      console.log('pwc.value :>> ', pwc.value);
       if (pw.value === pwc.value){
         document.getElementById('submit').disabled = false;
         pwc.style.backgroundColor = '#FFFFFF';
@@ -40,7 +39,7 @@
     if (document.cookie){
       let warning = getCookie('registermessage');
       if (warning && warning.length>=1){
-        document.getElementById('warning').innerHTML = warning
+        document.getElementById('warning').innerHTML = warning;
       }
 
       if (getCookie('success') == 'true'){
@@ -64,7 +63,9 @@
     }
   }
   return "";
+  }
 }
+
   </script>
 </body>
 </html>

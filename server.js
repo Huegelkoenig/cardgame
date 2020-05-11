@@ -52,6 +52,7 @@ app.get('/', (req,res,next) => {
     res.cookie('myAuthToken', req.cookies.myAuthToken, {
       maxAge: 3 * 1000, // would expire after x seconds  (x * 1000)
       httpOnly: true, // The cookie is only accessible by the web server
+      sameSite:'Strict',
       secure: true, // send only via https
       domain: DOMAIN,  //TODO
       path: '/'
@@ -100,13 +101,13 @@ app.post('/', async (req,res) => {
     catch (err){
       if (err instanceof Status){
         err.log(`logging at server.js, app.post('/',...), line ${102/*LL*/}`);
-        res.cookie('loginmessage', err.usermsg||err.usermessage||err.msg||err.message + '', {maxAge:1000});
+        res.cookie('loginmessage', err.usermsg||err.usermessage||err.msg||err.message + '', {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile(__dirname+'/public/login.html');
         return;
       }
       else{
         console.log(`unexpected error at\n\tserver.js\n\tapp.post('/',...), line ${108/*LL*/}\n\terror:`, err);
-        res.cookie('loginmessage', 'Oups, something went wrong. Cant validate your credentials.', {maxAge:1000});
+        res.cookie('loginmessage', 'Oups, something went wrong. Cant validate your credentials.', {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile(__dirname+'/public/login.html');
         return;
       }
@@ -119,6 +120,7 @@ app.post('/', async (req,res) => {
       res.cookie('myAuthToken', token, {
         maxAge: 3 * 1000, // expires after x seconds  (x*1000)
         httpOnly: true, // the cookie is only accessible by the web server
+        sameSite:'Strict',
         secure: true, // send only via https
         domain: DOMAIN,
         path: '/'
@@ -128,7 +130,7 @@ app.post('/', async (req,res) => {
     }
     else{
       console.log({error: 'not succesful. Wrong username or password'});
-      res.cookie('loginmessage', 'login failed: wrong username or password', {maxAge:1000});
+      res.cookie('loginmessage', 'login failed: wrong username or password', {maxAge:1000, sameSite:'Strict', secure:true});
       res.status(401).sendFile(__dirname+'/public/login.html');
       return;
       //res.status(401).sendFile(__dirname + '/public/index.html', {headers: {'x-sent': true}});  //sends loginFile again
@@ -146,7 +148,7 @@ function validateCookieToken(req){
   if (req.cookies['myAuthToken']){
     console.log('cookieToken vorhanden:');
     let token;
-    try{                         
+    try{
       token = jwt.verify(req.cookies['myAuthToken'], myJWTsecret)
     }
     catch (error){
