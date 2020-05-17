@@ -4,6 +4,7 @@ console.log('\x1b[32m%s\x1b[0m','----------- starting new node.js session ------
 const express = require('express');
 const http = require('http');
 const https = require('https');
+const bcrypt = require('bcrypt'); //DELETE: after login is moved to db-users.js
 
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -45,9 +46,7 @@ app.use('/', cookieParser());
 app.use('/', bodyParser.urlencoded({extended:true}));
 
 app.get('/', (req,res,next) => {
-  console.log('received GET / request');
   if (validateCookieToken(req)){
-    console.log('GET with valid cookie');
     //set cookie again to extend expiration date
     res.cookie('myAuthToken', req.cookies.myAuthToken, {
       maxAge: 3 * 1000, // would expire after x seconds  (x * 1000)
@@ -175,25 +174,40 @@ function validateCredentials(req){
       }
       catch(err){
         if (err instanceof Status){
-          err.rethrow(`at server.js, validateCredentials(), line ${176/*LL*/}`);
+          err.rethrow(`at server.js, validateCredentials(), line ${177/*LL*/}`);
           reject(err);
           return;
         }
-        reject(new Status({status:'error', file:'server.js', function:'validateCredentials()', line:180/*LL*/, msg:'see error message', error:err}));
+        reject(new Status({status:'error', file:'server.js', function:'validateCredentials()', line:181/*LL*/, msg:'see error message', error:err}));
         return;
       }
-      if (sqlResult.data.length == 1 && sqlResult.data[0]['UserName'] == req.body.loginusername && sqlResult.data[0]['UserPassword'] == req.body.loginpassword){
-        resolve(true);
-        return;
+      if (sqlResult.data.length == 1 && sqlResult.data[0]['UserName'] == req.body.loginusername){
+        bcrypt.compare(req.body.loginpassword, sqlResult.data[0]['UserPassword'], (err,result)=>{
+          if (err){
+            reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:187/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.bycrypt'}));
+            return;
+          }
+          if (result){
+            resolve(true);
+            return;
+          }
+          else{
+            reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:195/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.bycrypt', result: result}));
+            return;
+          }
+          
+        });        
       }
-      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:187/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.'}));
-      return;
+      else{
+        reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:201/*LL*/, msg:'loginusername or password wrong', usermsg:'The given username and password dont match.'}));
+        return;
+      }      
     }
     else{
-      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:191/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
+      reject(new Status({status:'denied', file:'server.js', function:'validateCredentials()', line:205/*LL*/, msg:'loginusername or password missing', usermsg:'Something went wrong. Make sure you entered a username and a password.'}));
       return;
     }
-  });
+    });
 }
 
 
@@ -243,18 +257,6 @@ function checkUserCredentialsInDatabase(username, password){
   return true;
 }
 
-function checkformat(string){
-  //TODO:
-  //check format of string (not undefined, length, no spaces, unallowed signs like || or && etc... ), prevent sqlinjects, etc
-  //see also: connection = mysql.createConnection(...);
-  //          var sql = "SELECT ... WHERE username = " + connection.escape(username);
-  // or     : var userID = 5;
-  //          var query = connection.query('SELECT * FROM users WHERE id = ?', [userId],
-  // or     : post  = {id: 1, title: 'Hello MySQL'};
-  //          var query = connection.query('INSERT INTO posts SET ?', post, function(err, result) {
-  // OR: : :  with MySQL2; .execute() !!!
-  return true;
-}
 
 
 
