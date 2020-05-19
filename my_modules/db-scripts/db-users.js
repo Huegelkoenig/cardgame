@@ -3,7 +3,7 @@ const Status = require('../status/class_status.js');
 
 let pool;
 
-const TABLE = 'Users'; //TODO: hardcode these values into the db
+const TABLE = 'Users'; //TODO: hardcode these values into the script (?)
 const USERNAME ='UserName';
 const PASSWORD = 'UserPassword';
 const EMAIL = 'UserEmail';
@@ -59,15 +59,15 @@ function getUserBy(type, comparative){
 
 
 /*
-function getYMDHMSM(date)
+function DateToString(date)
 description:
-  returns a string of the given date in the format YYYY/MM/DD HH:MM:SS:MMM
+  returns a string of the given date in the format 'YYYY/MM/DD HH:MM:SS:MMM'
 arguments:
   date... a Date() object
 return:
-  returns a string of the given date in the format YYYY/MM/DD HH:MM:SS:MMM
+  returns a string of the given date in the format 'YYYY/MM/DD HH:MM:SS:MMM'
 */
-function getYMDHMSM(date){
+function DateToString(date){
   let time = '';
   let dummy;
   time += date.getFullYear();
@@ -142,10 +142,8 @@ arguments:
   email... a string
   passwordconfirmation... should be the same as email
 return:
-  nothing, but the user will load a file (TODO: single page application) with a specific message, stating what happened or what went wrong
-*/ 
-//TODO: hash passwords with bcrypt
-//TODO: async await try catch--> promise.then().catch()
+  nothing, but a file (TODO: single page application?) with a specific message (stating 'registration succesfull' or some error) will be sent to the user
+*/
 function registerUser(req,res){
   //1) check if username, password, passwordconfirmation (and email if provided) are valid
   let name = req.body.registerusername;
@@ -182,43 +180,34 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 185/*LL*/, date:getYMDHMSM(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${186/*LL*/}`);
-        res.cookie('registermessage', `Oups, something went wrong! ErrorCode ${187/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 183/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${184/*LL*/}`);
+        res.cookie('registermessage', `Oups, seems like you found a bug! ErrorCode ${185/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
       //successfully hashed, now insert into DB
-      pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email],
-        (err)=>{
-          if (err){
-            if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
-              res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
-              res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
-              return;
-            }
-            new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 200/*LL*/, date:getYMDHMSM(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                      .log(`logging at db-users.js, function registerUser(), line ${201/*LL*/}`);
-            res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${202/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+      pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email], (err,result)=>{
+        if (err){
+          if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
+            res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
             res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
             return;
           }
-          res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
-          res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
-          res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 197/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${198/*LL*/}`);
+          res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${199/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+          res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
           return;
         }
-      );
+        res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
+        res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
+        res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
+        return;
+      });
     });
   }
 }
-
-
-
-
-
-  
-
 
 
 
