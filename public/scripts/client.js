@@ -11,13 +11,13 @@ window.onload = ()=>{
   xhttp.onreadystatechange = function() {
     if(this.readyState == 4) {
       console.log('readystate :>> ', this.readyState);
-      let sessionID = JSON.parse(xhttp.response).sessionID=='undefined'?JSON.parse(xhttp.response).sessionID:undefined;  //answer from server
+      let sessionID = JSON.parse(xhttp.response).sessionID!=='undefined'?JSON.parse(xhttp.response).sessionID:undefined;  //answer from server
       let token = JSON.parse(xhttp.response).token!=='undefined'?JSON.parse(xhttp.response).token:undefined;
       console.log('JSON.parse(xhttp.response).sessionID: ', sessionID); //sessionID is the name of the key, which is specified in server.js on POST '/' with valid token
       console.log('JSON.parse(xhttp.response).token: ', token); //not sure if this must be sent again to user, see server.js
       //overwrite user credentials
       socket.query.sessionID = sessionID;
-      socket.query.token = token;
+      socket.query.token = token;//TODO: replace token with username
       console.log('connect to socket :>> ');
       socket.connect(); 
       console.log('connected to socket :>> ');

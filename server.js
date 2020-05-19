@@ -17,7 +17,7 @@ const myJWTsecret = process.env.JWTSECRET;
 
 const PORT = process.env.PORT || 8322;
 const HTTPPORT = process.env.HTTPPORT || 8323;
-const DOMAIN = process.env.DOMAIN || localhost
+const DOMAIN = process.env.DOMAIN || localhost  //TODO: set DOMAIN variable
 
 
 //---- http server - http.html redirectes to https server ----
@@ -49,13 +49,14 @@ app.get('/', (req,res,next) => {
   if (validateCookieToken(req)){
     //set cookie again to extend expiration date
     res.cookie('myAuthToken', req.cookies.myAuthToken, {
-      maxAge: 3 * 1000, // would expire after x seconds  (x * 1000)
-      httpOnly: true, // The cookie is only accessible by the web server
+      maxAge: 3 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24h
+      httpOnly: true,       // the cookie is only accessible by the web server
       sameSite:'Strict',
-      secure: true, // send only via https
-      domain: DOMAIN,  //TODO
+      secure: true,         // send only via https
+      domain: DOMAIN,       
       path: '/'
     });
+    //SET another COOKIE with username and sessionID here and send it along!!!
     res.status(200).sendFile(__dirname + '/private/game.html'); //TODO:
     return;
   }  
@@ -82,12 +83,10 @@ app.post('/', async (req,res) => {
     // TODO: get personal login-id from mysql-table users, that gets created on login and is only limited for a certain amount of time
     // TODO: write new routine that overwrites these login id's after a certain amount of time after the last login
     // (setTimeout is bad, since a new login could have happened, maybe: settimeout, but check for last logindate first (must be saved into userstable, too)
-    let rand = Math.random(); //TODO: replace with sessionID
+    let rand = Math.random(); //TODO: replace: create sessionID, store it in DB
     console.log('rand :>> ', rand);
-      res.status(200).send({sessionID: rand, token: req.cookies['myAuthToken']}); //TODO: replace with just sessionID
-      //i think i really need to send the token here again, or else someone could just bruteforce socket-connections with random sessionID's
-      //maybe hash token again before sending it to the user?
-      // game.html will start a socket.io connection with this sessionID (and token)
+      res.status(200).send({sessionID: rand, token: req.cookies['myAuthToken']}); //TODO: replace with sessionID and username
+      // game.html will start a socket.io connection with this sessionID
   }
   else{
     console.log('POST without valid cookie');

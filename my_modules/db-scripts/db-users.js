@@ -1,9 +1,9 @@
-let bcrypt = require('bcrypt');
-let Status = require('../status/class_status.js');
+const bcrypt = require('bcrypt');
+const Status = require('../status/class_status.js');
 
 let pool;
 
-const TABLE = 'Users';
+const TABLE = 'Users'; //TODO: hardcode these values into the db
 const USERNAME ='UserName';
 const PASSWORD = 'UserPassword';
 const EMAIL = 'UserEmail';
@@ -45,7 +45,7 @@ function getUserBy(type, comparative){
     });
   }
   return new Promise((resolve,reject)=>{
-    pool.query(`SELECT ${USERNAME}, ${EMAIL}, ${PASSWORD}, ${SESSIONID}, ${SOCKETID}, ${SALT} FROM ${TABLE} WHERE ` + type + ' = ?;', [comparative],
+    pool.query(`SELECT ${USERNAME}, ${EMAIL}, ${PASSWORD}, ${SESSIONID}, ${SOCKETID} FROM ${TABLE} WHERE ` + type + ' = ?;', [comparative],
       (err,data)=>{
         if(err){
           reject(new Status({status:'error', file:'db-users.js', func: 'getUserBy()', line: 51/*LL*/, msg: `pool.query threw an error, see .error for details`, usermsg:'Oups, something went wrong! Maybe the database server is down!?', error: err}));
@@ -58,6 +58,15 @@ function getUserBy(type, comparative){
 }
 
 
+/*
+function getYMDHMSM(date)
+description:
+  returns a string of the given date in the format YYYY/MM/DD HH:MM:SS:MMM
+arguments:
+  date... a Date() object
+return:
+  returns a string of the given date in the format YYYY/MM/DD HH:MM:SS:MMM
+*/
 function getYMDHMSM(date){
   let time = '';
   let dummy;
@@ -171,46 +180,36 @@ function registerUser(req,res){
   else{
   //credentials seem to be ok
   // 2) try to register the user
-    bcrypt.genSalt(10, (err,salt)=> { //generate a salt with 10 rounds
+    bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 176/*LL*/, date:getYMDHMSM(new Date()), msg: `bcrypt.genSalt() threw an error`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${177/*LL*/}`);
-        res.cookie('registermessage', `Oups, something went wrong! ErrorCode ${178/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 185/*LL*/, date:getYMDHMSM(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${186/*LL*/}`);
+        res.cookie('registermessage', `Oups, something went wrong! ErrorCode ${187/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
-      //salt successfully created, now hashing the password
-      bcrypt.hash(password, salt, (err,hash)=>{
-        if (err){
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 185/*LL*/, date:getYMDHMSM(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${186/*LL*/}`);
-          res.cookie('registermessage', `Oups, something went wrong! ErrorCode ${187/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
-          res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
-          return;
-        }
-        //successfully hashed, now insert into DB
-        pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}, salt) VALUES (?, ?, ?, ?);`, [name, hash, email, salt],
-          (err)=>{
-            if (err){
-              if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
-                res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
-                res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
-                return;
-              }
-              new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 200/*LL*/, date:getYMDHMSM(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                        .log(`logging at db-users.js, function registerUser(), line ${201/*LL*/}`);
-              res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${202/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+      //successfully hashed, now insert into DB
+      pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email],
+        (err)=>{
+          if (err){
+            if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
+              res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
               res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
               return;
             }
-            res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
-            res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
-            res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
+            new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 200/*LL*/, date:getYMDHMSM(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                      .log(`logging at db-users.js, function registerUser(), line ${201/*LL*/}`);
+            res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${202/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+            res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
             return;
           }
-        );
-      });
-    });    
+          res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
+          res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
+          res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
+          return;
+        }
+      );
+    });
   }
 }
 

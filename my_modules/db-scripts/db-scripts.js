@@ -9,7 +9,7 @@ const pool = mysql.createPool({
     database : process.env.DATABASE
   });
 
-let userDBscripts = require('./db-users.js')(pool);
+const userDBscripts = require('./db-users.js')(pool);
 
 
 function getAllFrom(table){
