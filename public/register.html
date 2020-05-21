@@ -17,55 +17,6 @@
   </form>
   <p id="warning"><br></p>
   <a href="/">i am already registered. get me back to the login page</a>
-  <script>
-window.onload = ()=>{
-    let pw = document.getElementById('pw');
-    let pwc = document.getElementById('pwc');
-    pw.addEventListener('keyup', validatePW);
-    pwc.addEventListener('keyup', validatePW);
-    function validatePW(){
-      if (pw.value === pwc.value){
-        document.getElementById('submit').disabled = false;
-        pwc.style.backgroundColor = '#FFFFFF';
-        document.getElementById('warning').innerHTML = '<br>';
-      }
-      else{
-        document.getElementById('submit').disabled = true;
-        pwc.style.backgroundColor = '#e34f52';
-        document.getElementById('warning').innerHTML = 'passwords missmatch';
-      }
-    }
-
-    if (document.cookie){
-      let warning = getCookie('registermessage');
-      if (warning && warning.length>=1){
-        document.getElementById('warning').innerHTML = warning;
-      }
-
-      if (getCookie('success') == 'true'){
-        setTimeout(()=>{window.location.replace('login.html')},2000);
-      }
-    }
-    
-
-
-    function getCookie(cname) { //from W3schools.com
-  var name = cname + "=";
-  var decodedCookie = decodeURIComponent(document.cookie);
-  var ca = decodedCookie.split(';');
-  for(var i = 0; i <ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
-  }
-}
-
-  </script>
+  <script src="/scripts/user_register.js"></script>
 </body>
 </html>

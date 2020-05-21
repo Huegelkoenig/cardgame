@@ -43,6 +43,8 @@ function getAllFrom(table){
 
 module.exports = {
   getUserBy: userDBscripts.getUserBy,
+  loginResponse: userDBscripts.loginResponse,
   registerUser: userDBscripts.registerUser,
-  getAllFrom: getAllFrom
+  validateString: userDBscripts.validateString,
+  validateCredentials: userDBscripts.validateCredentials,
 }

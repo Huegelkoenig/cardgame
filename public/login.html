@@ -8,7 +8,7 @@
 </head>
 <body>
   <p>Cardgame</p>
-  <form id="login_form" action="/" method="post">
+  <form id="login_form" action="/login" method="post">
       <p>Login</p>
       <input type="text" placeholder="Username" size="20" name="loginusername" required>
       <input type="password"  placeholder="Password" size="20" name="loginpassword" required>
@@ -17,11 +17,10 @@
   <br>
   <p id="warning"><br></p>
   <br>
-  <a href="recover.html">I forgot my username and/or password</a>
+  <a href="/recover">I forgot my username and/or password</a>
   <br>
   <br>
-  <a href="register.html">Register</a>
-  <script src="/scripts/login.js"></script>
-  <script>alert('hi')</script>
+  <a href="/register">Register</a>
+  <script src="/scripts/user_login.js"></script>
 </body>
 </html>

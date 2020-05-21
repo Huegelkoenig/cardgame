@@ -58,6 +58,61 @@ function getUserBy(type, comparative){
 }
 
 
+
+
+function loginResponse(req, res, $_token=undefined){ //TODO:!!!!
+  
+  //create sessionID and store it into DB where token.username (128bit)
+  //set (refresh) cookie cardgameAuthToken
+  //set cookie with sessionID
+  //send file game.html
+
+/*
+  console.log('req.username :>> ', req.username);
+  //set cookie again to extend expiration date
+  res.cookie('cardgameAuthToken', req.cookies.cardgameAuthToken, {
+    maxAge: 5 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24h
+    httpOnly: true,       // the cookie is only accessible by the web server
+    sameSite:'Strict',
+    secure: true,         // send only via https
+    domain: DOMAIN,       
+    path: '/'
+  });
+  //SET another COOKIE with username and sessionID here and send it along!!!
+  res.status(200).sendFile(__dirname + '/private/game.html'); //TODO:
+  return;
+  */
+}
+
+
+function validateCredentials(req,res){
+  if (!req.body.loginusername || !req.body.loginpassword || !(typeof req.body.loginusername === "string") || !(typeof req.body.loginpassword === "string")){
+    res.cookie('loginMessage', `The submitted data is corrupted. Please enter your username and password again! Error Code "DB-U:${89/*LL*/}"`, {maxAge:1000, sameSite:'Strict', secure:true});
+    res.status(401).sendFile('/public/login.html',{root:__dirname+'/../..'});
+    return;
+  }
+  pool.query(`SELECT ${PASSWORD} FROM ${TABLE} WHERE ${USERNAME} = ?;`, req.body.loginusername, (err, sqlResult)=>{
+    if (err){
+      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 96/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${97/*LL*/}`);
+    }
+    if (err || data.length !== 1){
+      res.cookie('loginMessage', `The given username and/or password is incorrect. Please try again`, {maxAge:1000, sameSite:'Strict', secure:true});
+      res.status(401).sendFile('/public/login.html',{root:__dirname+'/../..'});
+      return;
+    }
+    bcrypt.compare(req.body.loginpassword, sqlResult.data[0][PASSWORD], (err,result)=>{
+      if (err){
+        res.cookie('loginMessage', `The given username and/or password is incorrect. Please try again`, {maxAge:1000, sameSite:'Strict', secure:true});
+        res.status(401).sendFile('/public/login.html',{root:__dirname+'/../..'});
+        return;
+      }
+      loginResponse(req,res);
+    });
+  });
+}
+
+
 /*
 function DateToString(date)
 description:
@@ -151,27 +206,27 @@ function registerUser(req,res){
   let email = req.body.registeremail.length>0?req.body.registeremail:null; //if no email is provided, req.body.registeremail == '' , thus will be set to null
   let passwordconfirmation = req.body.registerpasswordconfirmation;
   if (!name || !password || !passwordconfirmation){ //insufficient credentials (must be wrong usage of POSTMAN ;-D), sending register.html again
-    res.cookie('registermessage', 'Please enter username and password and also confirm the password. Email is optional.', {maxAge:1000, sameSite:'Strict', secure:true});
+    res.cookie('registerMessage', 'Please enter username and password and also confirm the password. Email is optional.', {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
-    res.cookie('registermessage', `Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`, {maxAge:1000, sameSite:'Strict', secure:true});
+    res.cookie('registerMessage', `Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (!validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
-    res.cookie('registermessage', `Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`, {maxAge:1000, sameSite:'Strict', secure:true});
+    res.cookie('registerMessage', `Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (password !== passwordconfirmation){
-    res.cookie('registermessage', `Registration aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`, {maxAge:1000, sameSite:'Strict', secure:true});
+    res.cookie('registerMessage', `Registration aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`, {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (email && !validateEmail(email)){
-    res.cookie('registermessage', 'Registration aborted! The provided emailadress seems to be invalid', {maxAge:1000, sameSite:'Strict', secure:true});
+    res.cookie('registerMessage', 'Registration aborted! The provided emailadress seems to be invalid', {maxAge:1000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
@@ -180,9 +235,9 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 183/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${184/*LL*/}`);
-        res.cookie('registermessage', `Oups, seems like you found a bug! ErrorCode ${185/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 237/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${238/*LL*/}`);
+        res.cookie('registerMessage', `Oups, seems like you found a bug! ErrorCode ${239/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
@@ -190,17 +245,17 @@ function registerUser(req,res){
       pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email], (err,result)=>{
         if (err){
           if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
-            res.cookie('registermessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
+            res.cookie('registerMessage', `Registration aborted. User '${name}' already exists. Please try another username.`, {maxAge:1000, sameSite:'Strict', secure:true});
             res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
             return;
           }
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 197/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${198/*LL*/}`);
-          res.cookie('registermessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${199/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 251/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${252/*LL*/}`);
+          res.cookie('registerMessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${253/*LL*/}`, {maxAge:1000, sameSite:'Strict', secure:true});
           res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
           return;
         }
-        res.cookie('registermessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
+        res.cookie('registerMessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:1000, sameSite:'Strict', secure:true});
         res.cookie('success', true, {maxAge:1000, sameSite:'Strict', secure:true});
         res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
@@ -215,7 +270,9 @@ module.exports = (global_pool) => {
   pool = global_pool;
   return {
   getUserBy,
+  loginResponse,
   registerUser,
-  validateString
+  validateString,
+  validateCredentials
   }
 }
