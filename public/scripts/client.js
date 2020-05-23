@@ -1,46 +1,23 @@
 window.onload = ()=>{
 
-  let socket = io('https://localhost:8322', {query: {userID: undefined}, autoConnect: false});
-  document.getElementById('game').innerHTML = `here's the game`;
+  document.getElementById('game').innerHTML = `here's the game`; //DELETE: just a test field
+  
 
 
-  xhttp = new XMLHttpRequest();
-  xhttp.open("POST", "/", true);
-  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  xhttp.send();
-  xhttp.onreadystatechange = function() {
-    if(this.readyState == 4) {
-      console.log('readystate :>> ', this.readyState);
-      let sessionID = JSON.parse(xhttp.response).sessionID!=='undefined'?JSON.parse(xhttp.response).sessionID:undefined;  //answer from server
-      let token = JSON.parse(xhttp.response).token!=='undefined'?JSON.parse(xhttp.response).token:undefined;
-      console.log('JSON.parse(xhttp.response).sessionID: ', sessionID); //sessionID is the name of the key, which is specified in server.js on POST '/' with valid token
-      console.log('JSON.parse(xhttp.response).token: ', token); //not sure if this must be sent again to user, see server.js
-      //overwrite user credentials
-      socket.query.sessionID = sessionID;
-      socket.query.token = token;//TODO: replace token with username
-      console.log('connect to socket :>> ');
-      socket.connect(); 
-      console.log('connected to socket :>> ');
-      //well, javascript could be haltet at the lines above by developer tools, but i think its saver to delete these here
-      xhttp = undefined;
-      socket.query.sessionID = undefined;
-      socket.query.token = undefined
-      
-    }
-    else {
-      document.getElementById('textfeld').innerHTML = 'Access not allowed yet'; 
-    }
-    
-  }
+  let sessionCookie = JSON.parse(getCookie('session'));
+
+  let socket = io('https://localhost:8322', {query: {username: sessionCookie.username, sessionID: sessionCookie.sessionID}, autoConnect: false});
+  socket.connect(); 
+  
 
 
   socket.on('startDDoS', ()=>{
-    console.log('startDDoS :>> ');
-    for (let i=0; i<109; i++){
+    for (let i=0; i<2002; i++){
       socket.emit('testDDoS');
     }
-  })
+  });
 
+  
 
   socket.on('error', (error) => {
     if (error == 'userIDtimedout'){
@@ -54,6 +31,35 @@ window.onload = ()=>{
   });
 
 
-//
+
+  //sent by the server, just before the client gets disconnected by the server
+  socket.on('disconnectionMessage',(msg)=>{
+    document.cookie = "loginMessage=" + msg+"; max-age=1; sameSite=strict; __Secure=true;";
+    location.replace('/');
+  })
+  //
+  socket.on('disconnect',()=>{
+    //unintentional disconnects or disconnects by the client (page refresh, page closed, call of other url,...)
+  });
 }
+  
+
+
+
+function getCookie(cname) { //from W3schools.com
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
 

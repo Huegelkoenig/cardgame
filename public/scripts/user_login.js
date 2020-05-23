@@ -1,10 +1,11 @@
 window.onload = ()=>{
-  document.getElementById('warning').innerHTML = getCookie('loginMessage');
+
+  document.getElementById('msg').innerHTML = getCookie('loginMessage')+'<br>';
 
 
 
   document.addEventListener('submit',function (evt){
-    document.getElementById('warning').innerHTML='Trying to log in! Please wait!';}
+    document.getElementById('msg').innerHTML='Trying to log in! Please wait!';}
   );
 
 
@@ -24,4 +25,5 @@ window.onload = ()=>{
     }
     return "";
   }
+
 }
