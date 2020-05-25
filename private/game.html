@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>My Socket.io gameroom test</title>
+  <title>cardgame</title>
 </head>
 <body>
-  <p>Cardgame</p>
-  <p id="game">here's no game yet</p>
-  <p id="msg">unchanged textfeld</p>
+  <canvas id="CardgameCanvas" width=800 height=450></canvas>
   <br>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/scripts/class_asset.js"></script>
@@ -18,6 +16,7 @@
   <script src="/scripts/class_animation.js"></script>
   <script src="/scripts/class_item.js"></script>
   <script src="/scripts/class_squircle.js"></script>
-  <script src="/scripts/client.js"></script>
+  <script src="/scripts/client_IO.js"></script>
+  <script src="/scripts/client_init.js"></script>
 </body>
 </html>

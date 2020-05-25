@@ -20,7 +20,7 @@ const myJWTsecret = process.env.JWTSECRET;
 
 const PORT = process.env.PORT || 8322;
 const HTTPPORT = process.env.HTTPPORT || 8323;
-const DOMAIN = process.env.DOMAIN || 'localhost'  //TODO: set DOMAIN variable
+const DOMAIN = process.env.DOMAIN || 'localhost'  //TODO: set DOMAIN variable //TODO: set domain and path for cookies
 
 
 //---- http server - http.html redirectes to https server ----
@@ -116,10 +116,7 @@ server.listen(PORT || 8322, () => {
 
 
 
-
-
-
-
+/*------- socket.io -----------------------------------------*/
 const socketio = require('socket.io');
 const io = socketio.listen(server);
 
@@ -127,19 +124,27 @@ const io = socketio.listen(server);
 io.on('connection', async (socket) => {
   console.log(`a new user connected to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}', username '${socket.handshake.query.username}' and socket.id '${socket.id}'`);
   //disconnect socket immediatelly, if sessionID is invalid (this should only happen if the user deleted his account but still has an authToken or the DB is attacked)
-  let sessionIDvalid;
+  let sessionIDisValid;
   try{  //used a promise here, since mySQL queries might take some time to respond and cardgame.init() shall not be run, while the sessionID isn't validated
-    sessionIDvalid = await dbScripts.validateSessionID(socket);
+    sessionIDisValid = await dbScripts.validateSessionID(socket);
   }
   catch(err){
     socket.emit('disconnectionMessage', err.usermsg);
     socket.disconnect(true);
-    err.log(`logging at server.js at io.on('connection',...), line ${137/*LL*/}`);
+    err.log(`logging at server.js at io.on('connection',...), line ${134/*LL*/}`);
     //res.cookie('loginMessage', err.usermsg, {maxAge:1000, sameSite:'Strict', secure:true});
     //res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
     return;
   }
-  if (sessionIDvalid){      //socket connection is valid! user can be identified via socket.handshake.query.username
+  //socket connection is valid! user can be identified via socket.handshake.query.username
+  if (sessionIDisValid){      
     cardgame.init(socket);
+  }
+  else{
+    //this shouldn't happen
+    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 145/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
+                  .log(`logging at server.js, function io.on('connection',...), line ${146/*LL*/}`);
+    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${147/*LL*/}`);
+    socket.disconnect(true);
   }
 });

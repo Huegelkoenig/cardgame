@@ -1,9 +1,5 @@
 window.onload = ()=>{
 
-  document.getElementById('game').innerHTML = `here's the game`; //DELETE: just a test field
-  
-
-
   let sessionCookie = JSON.parse(getCookie('session'));
 
   let socket = io('https://localhost:8322', {query: {username: sessionCookie.username, sessionID: sessionCookie.sessionID}, autoConnect: false});
@@ -11,13 +7,13 @@ window.onload = ()=>{
   
 
 
-  socket.on('startDDoS', ()=>{
-    for (let i=0; i<2002; i++){
-      socket.emit('testDDoS');
-    }
-  });
+  socket.on('connectionValidated',()=>{
+    initCanvas();
+  })
 
-  
+
+
+
 
   socket.on('error', (error) => {
     if (error == 'userIDtimedout'){
@@ -39,7 +35,7 @@ window.onload = ()=>{
   })
   //
   socket.on('disconnect',()=>{
-    //unintentional disconnects or disconnects by the client (page refresh, page closed, call of other url,...)
+    //disconnects by the client (page refresh, page closed, call of other url,...)
   });
 }
   
