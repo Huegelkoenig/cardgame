@@ -24,6 +24,7 @@ const MIN_PASS_LENGTH = 3;
 const MAX_PASS_LENGTH = 50;
 const MAX_EMAIL_LENGTH = 65;
 const ALLOWED_USER_CHARS = /[0-9a-z_.-]/ig;
+const HEX_CHARS = /[0-9a-f]/g;
 
 
 /* //TODO: move to own module
@@ -61,6 +62,53 @@ function DateToString(date){
 }
 
 
+/*
+function validateString(string, minLength, maxLength, $_regex)
+description:
+  determains if the given string is valid
+arguments:
+  string... the string to check
+  minLength.. the minimum length of the string
+  maxLength... the maximum length of the string
+  $_regex... (optional) a regular expression for allowed characters to check against, $_regex MUST have a global flag /.../g
+return:
+  true, if the string is valid, else false
+*/
+function validateString(string, minLength, maxLength, $_regex = undefined){
+  if (string &&  typeof string === 'string' && string.length>=minLength && string.length<=maxLength){
+    if (!$_regex){
+      return true;
+    }
+    let stringMatch = string.match($_regex);
+    if (stringMatch!==null && stringMatch[0]===string){
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+/*
+function validateEmail(email)
+description:
+  determains if the given email is valid (non standard emails excluded)
+arguments:
+  email... string
+return:
+  true, if the email is valid, else false
+*/
+function validateEmail(email){ //TODO: internationalized and other "strange" emailadresses are rejected... get rid of this and send confirmation emails
+  if (email && typeof email==='string' && email.length<=MAX_EMAIL_LENGTH ){
+    let emailmatch = email.match(/^[0-9a-z]+[0-9a-z._%+]*@[0-9a-z.-]+\.[a-z]{2,}/i);
+    if (emailmatch!==null && emailmatch[0]===email && email.match(/[.]{2,}/) === null){
+      return true;
+    }
+  }
+  return false;
+}
+
+
 
 /*
 function validateCredentials(req, res)
@@ -74,18 +122,18 @@ return:
 */
 function validateCredentials(req, res){
   //check if username and password are existing and string
-  if (!req.body.loginusername || !req.body.loginpassword || !(typeof req.body.loginusername === "string") || !(typeof req.body.loginpassword === "string")){
-    res.cookie('loginMessage', `The submitted data is corrupted. Please enter your username and password again! Error Code "DB-U:${78/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+  if (!validateString(req.body.loginusername,MIN_NAME_LENGTH,MAX_NAME_LENGTH, ALLOWED_USER_CHARS) || !validateString(req.body.loginpassword,MIN_PASS_LENGTH,MAX_PASS_LENGTH)){
+    res.cookie('loginMessage', `The submitted data is invalid. Please enter your username and password again! Error Code "DB-U:${117/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
     return;
   }
   //get hashed password from database
   pool.query(`SELECT ${PASSWORD} FROM ${TABLE} WHERE ${USERNAME} = ?;`, req.body.loginusername, (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 85/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${86/*LL*/}`);
-      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${87/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
-      res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
+      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 124/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${125/*LL*/}`);
+      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${126/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+      res.status(500).sendFile('/public/login.html', {root:__dirname+'/../..'});
       return;
     }
     //if sqlResult.length === 0, no user with given username was found.
@@ -98,9 +146,9 @@ function validateCredentials(req, res){
     //compare given password with stored hashpassword
     bcrypt.compare(req.body.loginpassword, sqlResult[0][PASSWORD], (err,match)=>{
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 101/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${102/*LL*/}`);
-        res.cookie('loginMessage', `Oups, something went wrong. Error-Code: "DB-U:${103/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 140/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${141/*LL*/}`);
+        res.cookie('loginMessage', `Oups, something went wrong. Error-Code: "DB-U:${142/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
         return;
       }
@@ -127,7 +175,7 @@ arguments:
   req... the response object from a app.post('/login',(req,res)=>{}), submitted when a user tries to log in
   $_oldToken... (optional) the valid authToken of the user (if exists). It will be refreshed with a new token, expiring later
 return:
-  responds by sending the game.html along with a sessionID and a new authToken. If something went wrong, the login.html will be sent again
+  responds by sending the game.html along with a sessionID and a new authToken (both as seperate cookies). If something went wrong, the login.html will be sent again
 */
 function loginResponse(req, res, $_oldToken=undefined){
   //retrieve username from token or from submitted login form
@@ -136,21 +184,21 @@ function loginResponse(req, res, $_oldToken=undefined){
   let sessionID = crypto.randomBytes(16).toString('hex');
   pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, [sessionID, username], (err,sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 139/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function loginResponse(), line ${140/*LL*/}`);
-      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${141/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
-      res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
+      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 178/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function loginResponse(), line ${179/*LL*/}`);
+      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${180/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+      res.status(500).sendFile('/public/login.html', {root:__dirname+'/../..'});
       return;
     }
     //set a new httpOnly cookie with the cardgameAuthToken
     //TODO: if (!&_oldToken){ let authToken... res.cookie('cardgameAuthToken'...)}   //else: the token is already set, if cookie and authToken have same maxAge/expiresIn
-    let authToken = $_oldToken?jwt.sign($_oldToken, myJWTsecret):jwt.sign({username: username}, myJWTsecret, {expiresIn: '1m'}); //TODO: adjust expiresIn to e.g.'24h'
+    let authToken = $_oldToken?jwt.sign($_oldToken, myJWTsecret):jwt.sign({username: username}, myJWTsecret, {expiresIn: '10s'}); //TODO: adjust expiresIn to e.g.'24h'
     res.cookie('cardgameAuthToken', authToken, {
-      maxAge: 50 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24h
+      maxAge: 50 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24*60*60 * 1000 for 24h
       httpOnly: true,       // the cookie is only accessible by the web server
       sameSite:'Strict',
       secure: true         // send only via https
-      //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?!
+      //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?! due to localhost???
       //path: '/'
     });
     //set cookie with username and sessionID
@@ -174,29 +222,29 @@ return:
 function validateSessionID(socket){
   return new Promise((resolve, reject)=>{
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
-    if (!socket.handshake.query.username || typeof socket.handshake.query.username!=='string' || !socket.handshake.query.sessionID || typeof socket.handshake.query.sessionID!=='string'){
-      reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 177/*LL*/, date:DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
+    if (!validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
+      reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 217/*LL*/, date:DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
       return;
     }
     pool.query(`SELECT ${SESSIONID} FROM ${TABLE} WHERE ${USERNAME} = ?;`, socket.handshake.query.username, (err, sqlResult)=>{
       if (err){
-        reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 182/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${182/*LL*/}"`, error: err}));
+        reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 222/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${222/*LL*/}"`, error: err}));
         return;
       }
       //if sqlResult.length === 0, no user with given username was found  (this may happens, if a user still has a valid authtoken, but is deleted from the DB - or if someone tries to attack the DB)
       if (sqlResult.length === 0){
-        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 187/*LL*/, date:DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`, error: err}));//don't change the usermsg, or an attacker could retrieve usernames
+        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 227/*LL*/, date:DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`, error: err}));//don't change the usermsg, or an attacker could retrieve usernames
         return;
       }
       //given sessionID doesn't match stored sessionID or has an invalid format  (this should only happen, if someone tries to attack the DB)
       if (socket.handshake.query.sessionID.length!==32 || socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){
-        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 192/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
+        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 232/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
         return;
       }
       //sessionID is ok, delete sessionID from DB, to prevent capturing, resolve true
       pool.query(`UPDATE  ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, ['', socket.handshake.query.username], (err,sqlResult)=>{
         if (err){
-          reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 198/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${198/*LL*/}"`, error: err}));
+          reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 238/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${238/*LL*/}"`, error: err}));
           return;
         }
         resolve(true);
@@ -207,43 +255,12 @@ function validateSessionID(socket){
 
 
 
+function recoverCredentials(req,res){
 
-/*
-function validateString(string, minLength, maxLength, $_regex)
-description:
-  determains if the given string is valid
-arguments:
-  string... the string to check
-  minLength.. the minimum length of the string
-  maxLength... the maximum length of the string
-  $_regex... (optional) a regular expression for allowed characters to check against, $_regex MUST have a global flag //g
-return:
-  true, if the string is valid, else false
-*/
-function validateString(string, minLength, maxLength, $_regex = undefined){
-  return (string &&  typeof string === 'string' && string.length>=minLength && string.length<=maxLength && (!$_regex || ($_regex && string.match($_regex).length===string.length)));
+
+
 }
 
-
-
-/*
-function validateEmail(email)
-description:
-  determains if the given email is valid (non standard emails excluded)
-arguments:
-  email... string
-return:
-  true, if the email is valid, else false
-*/
-function validateEmail(email){
-  if (email && typeof email==='string' && email.length<=MAX_EMAIL_LENGTH ){
-    let emailmatch = email.match(/^[0-9a-z]+[0-9a-z._%+]*@[0-9a-z.-]+\.[a-z]{2,}/i);
-    if (emailmatch != null && emailmatch[0]===email && email.match(/[.]{2,}/) === null){
-      return true;
-    }
-  }
-  return false;
-}
 
 
 
@@ -267,7 +284,7 @@ function registerUser(req,res){
   let passwordconfirmation = req.body.registerpasswordconfirmation;
   if (!name || !password || !passwordconfirmation){ //insufficient credentials (must be wrong usage of POSTMAN ;-D), sending register.html again
     res.cookie('registerMessage', 'Please enter username and password and also confirm the password. Email is optional.', {maxAge:5000, sameSite:'Strict', secure:true});
-    res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
+    res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
     return;
   }
   else if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
@@ -295,10 +312,10 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 297/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${298/*LL*/}`);
-        res.cookie('registerMessage', `Oups, seems like you found a bug! ErrorCode ${299/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
-        res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 305/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${306/*LL*/}`);
+        res.cookie('registerMessage', `Oups, seems like you found a bug! ErrorCode ${307/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
+        res.status(500).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
       //successfully hashed, now insert into DB
@@ -309,14 +326,14 @@ function registerUser(req,res){
             res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
             return;
           }
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 311/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${312/*LL*/}`);
-          res.cookie('registerMessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${313/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
-          res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 319/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${320/*LL*/}`);
+          res.cookie('registerMessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${321/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
+          res.status(500).sendFile('/public/register.html',{root:__dirname+'/../..'});
           return;
         }
         res.cookie('registerMessage', 'You registered succesfully. You will be redirected to the login page shortly.', {maxAge:5000, sameSite:'Strict', secure:true});
-        res.cookie('success', true, {maxAge:5000, sameSite:'Strict', secure:true});
+        res.cookie('loginSuccess', true, {maxAge:5000, sameSite:'Strict', secure:true});
         res.status(200).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       });
@@ -332,6 +349,7 @@ module.exports = (global_pool) => {
   validateCredentials,
   loginResponse,
   validateSessionID,
+  recoverCredentials,
   registerUser
   }
 }

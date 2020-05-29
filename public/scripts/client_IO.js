@@ -7,7 +7,7 @@ window.onload = ()=>{
   socket.connect(); 
   
 
-  
+
   socket.on('connectionValidated',()=>{
     initCanvas();
   })
@@ -31,7 +31,7 @@ window.onload = ()=>{
 
   //sent by the server, just before the client gets disconnected by the server
   socket.on('disconnectionMessage',(msg)=>{
-    document.cookie = "loginMessage=" + msg+"; max-age=1; sameSite=strict; __Secure=true;";
+    document.cookie = "loginMessage=" + msg + "; max-age=1; sameSite=strict; __Secure=true;";
     location.replace('/');
   })
   //

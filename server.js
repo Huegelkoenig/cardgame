@@ -61,7 +61,6 @@ app.get('/', (req,res,next) => {
       res.status(200).sendFile(__dirname+'/public/login.html'); 
       return;
     }
-    console.log('token :>> ', token);
     dbScripts.loginResponse(req,res,token);
   });
 });
@@ -72,9 +71,9 @@ app.get('/login', (req,res,next)=>{
 })
 
 //user submits a login attemp
-app.post('/', (req,res,next)=>{
-  dbScripts.validateCredentials(req,res); //if credentials are ok, dbScripts.loginResponse(req,res) will be called automatically
-})
+//if credentials are ok, dbScripts.loginResponse(req,res) will be called afterwards
+app.post('/', dbScripts.validateCredentials);
+
 
 
 
@@ -84,9 +83,7 @@ app.get('/recover', (req,res,next)=>{
 })
 
 //user submits a recover attemp
-app.post('/recover', (req,res,next)=>{
-  res.status(200).sendFile(__dirname+'/public/login.html');  //TODO
-})
+app.post('/recover', dbScripts.recoverCredentials);
 
 
 
@@ -101,7 +98,7 @@ app.post('/register', dbScripts.registerUser);
 
 
 app.get('/hijack', (req,res,next)=>{ //DELETE: just for testing
-  res.status(200).sendFile(__dirname+'/_[test]_/hijack.html');  //TODO
+  res.status(200).sendFile(__dirname+'/_[test]_/hijack.html');
 })
 
 // any other request to any other path

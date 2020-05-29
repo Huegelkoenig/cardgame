@@ -6,10 +6,10 @@
 </head>
 <body>
   <p>Cardgame</p>
-  <p>recover your username or password</p>
-  <form id="register_form">
-      <p>enter your email</p>
-      <input type="email" placeholder="email" size="20" required>
+  <p>recover your username and/or password</p>
+  <form id="register_form" action="/recover" method="post">
+      <p>enter your email or username</p>
+      <input type="txt" placeholder="username or email" size="65" name="recover" required>
        <input type="submit">
   </form>
   <a href="/">i remember my credentials, get me back to the login page</a>

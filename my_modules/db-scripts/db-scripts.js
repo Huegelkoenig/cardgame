@@ -32,6 +32,7 @@ module.exports = {
   validateCredentials: userDBscripts.validateCredentials,
   loginResponse: userDBscripts.loginResponse,
   validateSessionID: userDBscripts.validateSessionID,
+  recoverCredentials: userDBscripts.recoverCredentials,
   registerUser: userDBscripts.registerUser,
   
 }
