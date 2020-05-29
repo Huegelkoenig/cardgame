@@ -23,8 +23,8 @@ const MAX_NAME_LENGTH = 30;
 const MIN_PASS_LENGTH = 3;
 const MAX_PASS_LENGTH = 50;
 const MAX_EMAIL_LENGTH = 65;
-const ALLOWED_USER_CHARS = /[0-9a-z_.-]/ig;
-const HEX_CHARS = /[0-9a-f]/g;
+const ALLOWED_USER_CHARS = /[0-9a-z_.-]*/ig;
+const HEX_CHARS = /[0-9a-f]*/g;
 
 
 /* //TODO: move to own module
@@ -75,7 +75,7 @@ return:
   true, if the string is valid, else false
 */
 function validateString(string, minLength, maxLength, $_regex = undefined){
-  if (string &&  typeof string === 'string' && string.length>=minLength && string.length<=maxLength){
+  if (string && typeof string === 'string' && string.length>=minLength && string.length<=maxLength){
     if (!$_regex){
       return true;
     }
@@ -123,16 +123,16 @@ return:
 function validateCredentials(req, res){
   //check if username and password are existing and string
   if (!validateString(req.body.loginusername,MIN_NAME_LENGTH,MAX_NAME_LENGTH, ALLOWED_USER_CHARS) || !validateString(req.body.loginpassword,MIN_PASS_LENGTH,MAX_PASS_LENGTH)){
-    res.cookie('loginMessage', `The submitted data is invalid. Please enter your username and password again! Error Code "DB-U:${117/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+    res.cookie('loginMessage', `The submitted data is invalid. Please enter your username and password again! Error Code "DB-U:${134/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
     res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
     return;
   }
   //get hashed password from database
   pool.query(`SELECT ${PASSWORD} FROM ${TABLE} WHERE ${USERNAME} = ?;`, req.body.loginusername, (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 124/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${125/*LL*/}`);
-      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${126/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 141/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${142/*LL*/}`);
+      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${143/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
       res.status(500).sendFile('/public/login.html', {root:__dirname+'/../..'});
       return;
     }
@@ -146,9 +146,9 @@ function validateCredentials(req, res){
     //compare given password with stored hashpassword
     bcrypt.compare(req.body.loginpassword, sqlResult[0][PASSWORD], (err,match)=>{
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 140/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${141/*LL*/}`);
-        res.cookie('loginMessage', `Oups, something went wrong. Error-Code: "DB-U:${142/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 157/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${158/*LL*/}`);
+        res.cookie('loginMessage', `Oups, something went wrong. Error-Code: "DB-U:${159/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
         res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
         return;
       }
@@ -184,9 +184,9 @@ function loginResponse(req, res, $_oldToken=undefined){
   let sessionID = crypto.randomBytes(16).toString('hex');
   pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, [sessionID, username], (err,sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 178/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function loginResponse(), line ${179/*LL*/}`);
-      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${180/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 195/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function loginResponse(), line ${196/*LL*/}`);
+      res.cookie('loginMessage', `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${197/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
       res.status(500).sendFile('/public/login.html', {root:__dirname+'/../..'});
       return;
     }
@@ -223,28 +223,28 @@ function validateSessionID(socket){
   return new Promise((resolve, reject)=>{
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
     if (!validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
-      reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 217/*LL*/, date:DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
+      reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 234/*LL*/, date:DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
       return;
     }
     pool.query(`SELECT ${SESSIONID} FROM ${TABLE} WHERE ${USERNAME} = ?;`, socket.handshake.query.username, (err, sqlResult)=>{
       if (err){
-        reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 222/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${222/*LL*/}"`, error: err}));
+        reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 239/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${239/*LL*/}"`, error: err}));
         return;
       }
       //if sqlResult.length === 0, no user with given username was found  (this may happens, if a user still has a valid authtoken, but is deleted from the DB - or if someone tries to attack the DB)
       if (sqlResult.length === 0){
-        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 227/*LL*/, date:DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`, error: err}));//don't change the usermsg, or an attacker could retrieve usernames
+        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 244/*LL*/, date:DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`, error: err}));//don't change the usermsg, or an attacker could retrieve usernames
         return;
       }
       //given sessionID doesn't match stored sessionID or has an invalid format  (this should only happen, if someone tries to attack the DB)
       if (socket.handshake.query.sessionID.length!==32 || socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){
-        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 232/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
+        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 249/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
         return;
       }
       //sessionID is ok, delete sessionID from DB, to prevent capturing, resolve true
       pool.query(`UPDATE  ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, ['', socket.handshake.query.username], (err,sqlResult)=>{
         if (err){
-          reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 238/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${238/*LL*/}"`, error: err}));
+          reject(new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 255/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${255/*LL*/}"`, error: err}));
           return;
         }
         resolve(true);
@@ -312,9 +312,9 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 305/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${306/*LL*/}`);
-        res.cookie('registerMessage', `Oups, seems like you found a bug! ErrorCode ${307/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 323/*LL*/, date:DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${324/*LL*/}`);
+        res.cookie('registerMessage', `Oups, seems like you found a bug! ErrorCode ${325/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
         res.status(500).sendFile('/public/register.html',{root:__dirname+'/../..'});
         return;
       }
@@ -326,9 +326,9 @@ function registerUser(req,res){
             res.status(401).sendFile('/public/register.html',{root:__dirname+'/../..'});
             return;
           }
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 319/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${320/*LL*/}`);
-          res.cookie('registerMessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${321/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 337/*LL*/, date:DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${338/*LL*/}`);
+          res.cookie('registerMessage', `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${339/*LL*/}`, {maxAge:5000, sameSite:'Strict', secure:true});
           res.status(500).sendFile('/public/register.html',{root:__dirname+'/../..'});
           return;
         }
