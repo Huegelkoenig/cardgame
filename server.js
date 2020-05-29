@@ -61,6 +61,7 @@ app.get('/', (req,res,next) => {
       res.status(200).sendFile(__dirname+'/public/login.html'); 
       return;
     }
+    console.log('token :>> ', token);
     dbScripts.loginResponse(req,res,token);
   });
 });

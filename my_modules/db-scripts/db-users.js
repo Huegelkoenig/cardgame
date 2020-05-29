@@ -121,7 +121,7 @@ function validateCredentials(req, res){
 /*
 function loginResponse(req, res, $_oldToken)
 description:
-  creates a sessionID and a new/refreshed authToken for a user that has already logged in with a valid authToken or by submitting valid credentials
+  creates a sessionID, store it in DB and send it as cookie to the user. Also create a authToken (if already exists, resend the old) for a user that has already logged in with a valid authToken or by submitting valid credentials
 arguments:
   req... the request object from a app.post('/login',(req,res)=>{}), submitted when a user tries to log in
   req... the response object from a app.post('/login',(req,res)=>{}), submitted when a user tries to log in
@@ -142,14 +142,15 @@ function loginResponse(req, res, $_oldToken=undefined){
       res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
       return;
     }
-    //set a new http-only cookie with the cardgameAuthToken
-    let authToken = jwt.sign({username: username}, myJWTsecret, {expiresIn: '24h'});
+    //set a new httpOnly cookie with the cardgameAuthToken
+    //TODO: if (!&_oldToken){ let authToken... res.cookie('cardgameAuthToken'...)}   //else: the token is already set, if cookie and authToken have same maxAge/expiresIn
+    let authToken = $_oldToken?jwt.sign($_oldToken, myJWTsecret):jwt.sign({username: username}, myJWTsecret, {expiresIn: '1m'}); //TODO: adjust expiresIn to e.g.'24h'
     res.cookie('cardgameAuthToken', authToken, {
-      maxAge: 5 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24h
+      maxAge: 50 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24h
       httpOnly: true,       // the cookie is only accessible by the web server
       sameSite:'Strict',
       secure: true         // send only via https
-      //domain: DOMAIN,    //TODO: look at these two. if domain or path are set, cookies won't work !?!?!?!
+      //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?!
       //path: '/'
     });
     //set cookie with username and sessionID
@@ -189,7 +190,7 @@ function validateSessionID(socket){
       }
       //given sessionID doesn't match stored sessionID or has an invalid format  (this should only happen, if someone tries to attack the DB)
       if (socket.handshake.query.sessionID.length!==32 || socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){
-        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 192/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`, error: err}));//don't change the usermsg, or an attacker could retrieve usernames
+        reject(new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 192/*LL*/, date:DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}));//don't change the usermsg, or an attacker could retrieve usernames
         return;
       }
       //sessionID is ok, delete sessionID from DB, to prevent capturing, resolve true

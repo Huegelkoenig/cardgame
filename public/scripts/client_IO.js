@@ -1,12 +1,13 @@
+//the following code gets executed after the user logged in and is served the game.html
 window.onload = ()=>{
-
+  
   let sessionCookie = JSON.parse(getCookie('session'));
 
   let socket = io('https://localhost:8322', {query: {username: sessionCookie.username, sessionID: sessionCookie.sessionID}, autoConnect: false});
   socket.connect(); 
   
 
-
+  
   socket.on('connectionValidated',()=>{
     initCanvas();
   })
