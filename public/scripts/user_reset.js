@@ -1,25 +1,25 @@
 window.onload = ()=>{
 
-  document.getElementById('msg').innerHTML = getCookie('cardgameRegisterMessage');
-  if (getCookie('cardgameLoginSuccess') == 'true'){
+  document.getElementById('msg').innerHTML = getCookie('cardgameResetMessage');
+  if (getCookie('cardgameResetSuccess') == 'true'){
     setTimeout(()=>{window.location.replace('login.html')},2000);
   }
-  
+
 
   //check if password and passwordConfirmation are equal
-  let pw = document.getElementById('pw');
-  let pwc = document.getElementById('pwc');
-  pw.addEventListener('keyup', validatePW);
-  pwc.addEventListener('keyup', validatePW);
+  let npw = document.getElementById('npw');
+  let npwc = document.getElementById('npwc');
+  npw.addEventListener('keyup', validatePW);
+  npwc.addEventListener('keyup', validatePW);
   function validatePW(){
-    if (pw.value === pwc.value){
+    if (npw.value === npwc.value){
       document.getElementById('submit').disabled = false;
-      pwc.style.backgroundColor = '#FFFFFF';
+      npwc.style.backgroundColor = '#FFFFFF';
       document.getElementById('msg').innerHTML = '<br>';
     }
     else{
       document.getElementById('submit').disabled = true;
-      pwc.style.backgroundColor = '#e34f52';
+      npwc.style.backgroundColor = '#e34f52';
       document.getElementById('msg').innerHTML = 'passwords missmatch';
     }
   }

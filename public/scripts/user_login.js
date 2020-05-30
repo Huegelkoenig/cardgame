@@ -1,6 +1,6 @@
 window.onload = ()=>{
 
-  document.getElementById('msg').innerHTML = getCookie('loginMessage')+'<br>';
+  document.getElementById('msg').innerHTML = getCookie('cardgameLoginMessage')+'<br>';
 
 
 

@@ -1,9 +1,10 @@
 //the following code gets executed after the user logged in and is served the game.html
 window.onload = ()=>{
   
-  let sessionCookie = JSON.parse(getCookie('session'));
-
+  let sessionCookie = JSON.parse(getCookie('cardgameSession'));
   let socket = io('https://localhost:8322', {query: {username: sessionCookie.username, sessionID: sessionCookie.sessionID}, autoConnect: false});
+  document.cookie = "cardgameSession=;"  // for security reasons (? not sure, if this really helps)
+  sessionCookie = ''; // for security reasons (? not sure, if this really helps)
   socket.connect(); 
   
 

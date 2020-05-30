@@ -85,6 +85,22 @@ app.get('/recover', (req,res,next)=>{
 //user submits a recover attemp
 app.post('/recover', dbScripts.recoverCredentials);
 
+//user clicked on the reset link provided by the email sent in dbScripts.recoverCredentials
+app.get('/reset/:recoverID', (req,res,next)=>{
+  res.cookie('cardgameResetPassword', req.params.recoverID, {
+    maxAge: 60*60 * 1000,     // would expire after x seconds  (x * 1000) //now: 60*60 = 1h
+    httpOnly: true,       // the cookie is only accessible by the web server
+    sameSite:'Strict',
+    secure: true         // send only via https
+    //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?! due to localhost???
+    //path: '/'
+  });
+  res.status(200).sendFile(__dirname+'/public/reset.html')
+})
+
+app.post('/reset', dbScripts.resetPassword);
+
+
 
 
 //user wants to see the registration page
@@ -129,9 +145,7 @@ io.on('connection', async (socket) => {
   catch(err){
     socket.emit('disconnectionMessage', err.usermsg);
     socket.disconnect(true);
-    err.log(`logging at server.js at io.on('connection',...), line ${134/*LL*/}`);
-    //res.cookie('loginMessage', err.usermsg, {maxAge:1000, sameSite:'Strict', secure:true});
-    //res.status(401).sendFile('/public/login.html', {root:__dirname+'/../..'});
+    err.log(`logging at server.js at io.on('connection',...), line ${148/*LL*/}`);
     return;
   }
   //socket connection is valid! user can be identified via socket.handshake.query.username
@@ -139,10 +153,10 @@ io.on('connection', async (socket) => {
     cardgame.init(socket);
   }
   else{
-    //this shouldn't happen
-    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 145/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
-                  .log(`logging at server.js, function io.on('connection',...), line ${146/*LL*/}`);
-    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${147/*LL*/}`);
+    //this shouldn't happen => DELETE: (??)
+    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 157/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
+                  .log(`logging at server.js, function io.on('connection',...), line ${158/*LL*/}`);
+    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${159/*LL*/}`);
     socket.disconnect(true);
   }
 });

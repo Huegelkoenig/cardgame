@@ -33,6 +33,7 @@ module.exports = {
   loginResponse: userDBscripts.loginResponse,
   validateSessionID: userDBscripts.validateSessionID,
   recoverCredentials: userDBscripts.recoverCredentials,
+  resetPassword: userDBscripts.resetPassword,
   registerUser: userDBscripts.registerUser,
   
 }
