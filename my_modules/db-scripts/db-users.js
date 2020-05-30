@@ -198,9 +198,9 @@ function loginResponse(req, res, $_oldToken=undefined){
     }
     //set a new httpOnly cookie with the cardgameAuthToken
     //TODO: if (!&_oldToken){ let authToken... res.cookie('cardgameAuthToken'...)}   //else: the token is already set, if cookie and authToken have same maxAge/expiresIn
-    let authToken = $_oldToken?jwt.sign($_oldToken, myJWTsecret):jwt.sign({username: username}, myJWTsecret, {expiresIn: '10s'}); //TODO: adjust expiresIn to e.g.'24h'
+    let authToken = $_oldToken?jwt.sign($_oldToken, myJWTsecret):jwt.sign({username: username}, myJWTsecret, {expiresIn: '1000s'}); //TODO: adjust expiresIn to e.g.'24h'
     res.cookie('cardgameAuthToken', authToken, {
-      maxAge: 50 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24*60*60 * 1000 for 24h
+      maxAge: 500 * 1000,     // would expire after x seconds  (x * 1000) TODO: adjust maxAge to e.g 24*60*60 * 1000 for 24h
       httpOnly: true,       // the cookie is only accessible by the web server
       sameSite:'Strict',
       secure: true         // send only via https
@@ -340,7 +340,7 @@ function recoverCredentials(req,res){
     Promise.all(promises)
       .then(()=>{
           res.cookie('cardgameLoginMessage', `An email has been sent to the given email adress.<br>Please check your mailbox and follow the instructions there`, {maxAge:5000, sameSite:'Strict', secure:true});
-          res.status(200).sendFile('/public/login.html', {root:__dirname+'/../..'});
+          res.status(200).redirect('/');
           return;
       })
       .catch((err)=>{
@@ -406,8 +406,8 @@ function resetPassword(req,res){
         return;
       }
       //if no match or time expired
-      if (sqlResult.length!==1 || sqlResult[0][RECTOKENEXP<Date.now()]){
-        res.cookie('cardgameResetMessage', `Reset aborted. You entered the wrong username or the reset-link is expired. You may <a href="/recover">request another reset link</a>.Error-Code "DB-U:${411/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
+      if (sqlResult.length!==1 || sqlResult[0][RECTOKENEXP]<Date.now()){
+        res.cookie('cardgameResetMessage', `Reset aborted. You entered the wrong username or the reset-link is expired. You may <a href="/recover">request another reset link</a>. Error-Code "DB-U:${411/*LL*/}"`, {maxAge:5000, sameSite:'Strict', secure:true});
         res.status(500).sendFile('/public/reset.html', {root:__dirname+'/../..'});
         return;
       }
@@ -421,7 +421,7 @@ function resetPassword(req,res){
           res.status(500).sendFile('/public/reset.html',{root:__dirname+'/../..'});
           return;
         }
-        //update database
+        //update password in database, delete recoveryID and link expiration
         pool.query(`UPDATE ${TABLE} SET ${PASSWORD} = ?, ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [hash, null, null, name], (err,sqlResult)=>{
           if (err){
             new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 428/*LL*/, date:DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
@@ -439,8 +439,8 @@ function resetPassword(req,res){
             //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?! due to localhost???
             //path: '/'
           });
-          res.cookie('cardgameLoginMessage', `You changed your password succesfully. Please log in again`, {maxAge:5000, sameSite:'Strict', secure:true});
-          res.status(500).sendFile('/public/login.html', {root:__dirname+'/../..'});
+          res.cookie('cardgameLoginMessage', `You changed your password succesfully. Please log in again!`, {maxAge:5000, sameSite:'Strict', secure:true});
+          res.status(200).redirect('/');
         });
       });
     });

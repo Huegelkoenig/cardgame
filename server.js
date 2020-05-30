@@ -88,7 +88,7 @@ app.post('/recover', dbScripts.recoverCredentials);
 //user clicked on the reset link provided by the email sent in dbScripts.recoverCredentials
 app.get('/reset/:recoverID', (req,res,next)=>{
   res.cookie('cardgameResetPassword', req.params.recoverID, {
-    maxAge: 60*60 * 1000,     // would expire after x seconds  (x * 1000) //now: 60*60 = 1h
+    maxAge: 60*60 * 1000,     // would expire after x seconds  (x * 1000) //now: 60*60 = 1h, equals expiration date of resetID
     httpOnly: true,       // the cookie is only accessible by the web server
     sameSite:'Strict',
     secure: true         // send only via https
@@ -98,7 +98,14 @@ app.get('/reset/:recoverID', (req,res,next)=>{
   res.status(200).sendFile(__dirname+'/public/reset.html')
 })
 
+
+app.post('/reset/:ID',(req,res,next)=>{
+  console.log('req.params.ID :>> ', req.params.ID);
+  next();
+})
 app.post('/reset', dbScripts.resetPassword);
+
+
 
 
 

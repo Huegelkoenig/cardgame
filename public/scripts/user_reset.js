@@ -1,9 +1,6 @@
 window.onload = ()=>{
 
   document.getElementById('msg').innerHTML = getCookie('cardgameResetMessage');
-  if (getCookie('cardgameResetSuccess') == 'true'){
-    setTimeout(()=>{window.location.replace('login.html')},2000);
-  }
 
 
   //check if password and passwordConfirmation are equal
