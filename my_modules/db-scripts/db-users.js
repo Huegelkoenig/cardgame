@@ -354,7 +354,7 @@ function recoverCredentials(req,res){
 
 
 /*
-function recoverCredentials(req,res)
+function resetPassword(req,res)
 description:
   lets the user reset his password, after he got the reset-link via recoverCredentials()
 arguments:
