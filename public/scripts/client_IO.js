@@ -1,10 +1,10 @@
 //the following code gets executed after the user logged in and is served the game.html
 window.onload = ()=>{
   
-  let sessionCookie = JSON.parse(getCookie('cardgameSession'));
-  let socket = io('https://localhost:8322', {query: {username: sessionCookie.username, sessionID: sessionCookie.sessionID}, autoConnect: false});
-  document.cookie = "cardgameSession=;"  // for security reasons (? not sure, if this really helps)
-  sessionCookie = ''; // for security reasons (? not sure, if this really helps)
+  let cardgameSessionCookie = JSON.parse(getCookie('cardgameSession')); //cookie was set immediately before the game.html was sent
+  let socket = io('https://huegelkoenig.dynv6.net:8322', {query: {username: cardgameSessionCookie.username, sessionID: cardgameSessionCookie.sessionID}, autoConnect: false});  //TODO: change host //TODO: send JWT token instead of username and sessionID
+  document.cookie = "cardgameSession=; max-age=1; sameSite=Strict; __Secure=True;"  // "delete" cookie with session details (for security reasons ? not sure, if this really helps)
+  cardgameSessionCookie = ''; // for security reasons (? not sure, if this really helps)  //TODO: check if necesary
   socket.connect(); 
   
 
@@ -19,11 +19,13 @@ window.onload = ()=>{
 
   socket.on('error', (error) => {
     if (error == 'userIDtimedout'){
-      document.getElementById('textfeld').innerHTML = `You're login cookie has timed out. Please log in again.<br>You will be redirected shortly`;
+      document.getElementById('textfeld').innerHTML = `Your login has timed out. Please log in again.<br>You will be redirected shortly`;
       socket.disconnect();
-      setTimeout(()=>{window.location.replace('login.html')},2000);   
+      setTimeout(()=>{window.location.replace('login.html')},3000);   
     }
     else{
+      document.getElementById('textfeld').innerHTML = `An error has occured. See console for details.`;
+      //socket.disconnect();
       console.log('error :>> ', error);
     };
   });
@@ -32,12 +34,17 @@ window.onload = ()=>{
 
   //sent by the server, just before the client gets disconnected by the server
   socket.on('disconnectionMessage',(msg)=>{
-    document.cookie = "loginMessage=" + msg + "; max-age=1; sameSite=strict; __Secure=true;";
+    document.cookie = "loginMessage=" + msg + "; max-age=1; sameSite=Strict; __Secure=true;";
     location.replace('/');
   })
   //
-  socket.on('disconnect',()=>{
-    //disconnects by the client (page refresh, page closed, call of other url,...)
+  socket.on('disconnect', (reason)=>{
+    //disconnect may be caused by the client (page refresh, page closed, call of other url,...)
+    if (document.getElementById('textfeld') != null){
+      document.getElementById('textfeld').innerHTML = `You've been disconnected. See console for details.`;
+    }    
+    console.log('socket.io disconnect reason :>> ', reason);
+    
   });
 }
   

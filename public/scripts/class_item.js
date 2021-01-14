@@ -22,7 +22,7 @@ constructor arguments:
   $_mouseup... (optional) defines what to do, when this item is mouseuped upon
   $_mouseover... (optional) defines what to do, when this item is hovered over  
   $_mouseout... (optional) defines what to do, when this item is hovered out
-      $_mouseclick - $_mouseout are either: - undefined, then nothing happens when the corresponding event happens
+      $_mouseclick , ... , $_mouseout are either: - undefined, then nothing happens when the corresponding event happens
                                             - a function, which is called when the event happens
                                             - an object {bubbling: boolean, func:function}
                                                 the function func will be called when the event happens. If bubbling===true the event can e.g be bubbled down to the next lower status.zIndex item
@@ -37,7 +37,7 @@ let myItem = new Item(animationCollection[4], {x:400, y:250, width:160, height:9
 */
 
 class Item{
-  constructor(obj={}, target=newCoords(0,0,0,0), $_layer=ctx, $_status=false, $_mouseclick=undefined, $_mousedown=undefined, $_mouseup=undefined, $_mouseover=undefined, $_mouseout=undefined){
+  constructor(obj={}, target=newCoords(0,0,0,0), $_layer=ctx, $_status=false, $_debugsomethinghere, $_mouseclick=undefined, $_mousedown=undefined, $_mouseup=undefined, $_mouseover=undefined, $_mouseout=undefined){
     this.obj = obj;
     this.target = target;
     this.layer = $_layer;
@@ -126,6 +126,6 @@ class Item_Collection extends Object{
 
 
 function newItem(){
-  //TODO: maybe argument checks
+  //TODO: may  check the arguments
   return new Item(...arguments);
 }

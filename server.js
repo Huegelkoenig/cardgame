@@ -10,9 +10,10 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
-const dbScripts = require('./my_modules/db-scripts/db-scripts');
+const dbScripts = require('./my_modules/db-scripts/db-scripts.js');
 const Status = require('./my_modules/status/class_status.js');
 const cardgame = require('./my_modules/cardgame/cardgame.js');
+const misc = require('./my_modules/misc/misc.js')
 
 
 const jwt = require('jsonwebtoken');
@@ -67,6 +68,7 @@ app.get('/', (req,res,next) => {
 
 //user wants to see the login page (may existing auth token will be ignored)
 app.get('/login', (req,res,next)=>{
+  console.log('GET /login')
   res.status(200).sendFile(__dirname+'/public/login.html');
 })
 
@@ -119,8 +121,8 @@ app.get('/register', (req,res,next)=>{
 app.post('/register', dbScripts.registerUser);
 
 
-
-app.get('/hijack', (req,res,next)=>{ //DELETE: just for testing
+//DELETE: just for testing
+app.get('/hijack', (req,res,next)=>{
   res.status(200).sendFile(__dirname+'/_[test]_/hijack.html');
 })
 
@@ -136,15 +138,16 @@ server.listen(PORT || 8322, () => {
 
 
 
-
+/*------- socket.io -----------------------------------------*/
+/*------- socket.io -----------------------------------------*/
 /*------- socket.io -----------------------------------------*/
 const socketio = require('socket.io');
-const io = socketio.listen(server);
+const io = socketio.listen(server, {cookie: false});
 
 
 io.on('connection', async (socket) => {
-  console.log(`a new user connected to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}', username '${socket.handshake.query.username}' and socket.id '${socket.id}'`);
-  //disconnect socket immediatelly, if sessionID is invalid (this should only happen if the user deleted his account but still has an authToken or the DB is attacked)
+  console.log(`${misc.DateToString(new Date())}: User '${socket.handshake.query.username}' tries to connect to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}' and socket.id '${socket.id}'`);
+  //disconnect socket immediatelly, if sessionID is invalid (this should only happen if the user deleted his account but still has an authToken (e.g. on another device) or the DB is attacked)
   let sessionIDisValid;
   try{  //used a promise here, since mySQL queries might take some time to respond and cardgame.init() shall not be run, while the sessionID isn't validated
     sessionIDisValid = await dbScripts.validateSessionID(socket);
@@ -152,18 +155,18 @@ io.on('connection', async (socket) => {
   catch(err){
     socket.emit('disconnectionMessage', err.usermsg);
     socket.disconnect(true);
-    err.log(`logging at server.js at io.on('connection',...), line ${148/*LL*/}`);
+    err.log(`logging at server.js at io.on('connection',...), line ${156/*LL*/}`);
     return;
   }
   //socket connection is valid! user can be identified via socket.handshake.query.username
-  if (sessionIDisValid){      
+  if (sessionIDisValid){
     cardgame.init(socket);
   }
   else{
-    //this shouldn't happen => DELETE: (??)
-    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 157/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
-                  .log(`logging at server.js, function io.on('connection',...), line ${158/*LL*/}`);
-    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${159/*LL*/}`);
+    //this shouldn't happen, since, if sessionID is invalid, an error (new Status) will be thrown => DELETE: (or leave it??)
+    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 165/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
+                  .log(`logging at server.js, function io.on('connection',...), line ${166/*LL*/}`);
+    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${167/*LL*/}`);
     socket.disconnect(true);
   }
 });
