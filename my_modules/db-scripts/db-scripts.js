@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const Status = require('../status/class_status.js');
+//const Status = require('../status/class_status.js');
 
 const pool = mysql.createPool({
     connectionLimit: 100,
