@@ -12,10 +12,10 @@ function DateToString(date){
   let dummy;
   time += date.getFullYear();
   time +='/';
-  dummy = date.getMonth();
+  dummy = date.getMonth() + 1;
   time += dummy>9?dummy:('0'+dummy);
   time +='/';
-  dummy = date.getDay();
+  dummy = date.getDate();
   time += dummy>9?dummy:('0'+dummy);
   time +=' ';
   dummy = date.getHours();
