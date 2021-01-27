@@ -143,7 +143,7 @@ server.listen(PORT || 8322, () => {
 /*------- socket.io -----------------------------------------*/
 /*------- socket.io -----------------------------------------*/
 const socketio = require('socket.io');
-const io = socketio.listen(server, {cookie: false});
+const io = socketio(server, {cookie: false});
 
 //verify user via sessionID BEFORE the 'connection' event
 io.use((socket,next)=>{ //this will be executed only once per connection, see https://socket.io/docs/v3/middlewares

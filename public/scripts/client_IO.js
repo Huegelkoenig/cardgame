@@ -2,9 +2,10 @@
 let username;
 window.onload = ()=>{
   
+  
   let cardgameSessionCookie = JSON.parse(getCookie('cardgameSession')); //cookie was set immediately before the game.html was sent
   //TODO: rewrite as xmlHttpRequest()... onload(()=>{socket.connect})
-  let socket = io('https://huegelkoenig.dynv6.net:8322', {query: {username: cardgameSessionCookie.username, sessionID: cardgameSessionCookie.sessionID}, autoConnect: false, reconnection: true});  //TODO: change host //TODO: send JWT token instead of username and sessionID (??)
+  let socket = io('https://huegelkoenig.dynv6.net:8322', {query: {username: cardgameSessionCookie.username, sessionID: cardgameSessionCookie.sessionID}, autoConnect: false});  //TODO: change host //TODO: send JWT token instead of username and sessionID (??)
   socket.username = cardgameSessionCookie.username;
   document.cookie = "cardgameSession=; max-age=1; sameSite=Strict; __Secure=True;"  // "delete" cookie with session details (for security reasons ? not sure, if this really helps)
   cardgameSessionCookie = ''; // for security reasons (? not sure, if this really helps)  //TODO: check if necesary
