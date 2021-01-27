@@ -16,7 +16,7 @@ function initCanvas(){
   ctx.fillRect(0,440,10,10);
   ctx.fillRect(790,440,10,10);
   ctx.font = "30px Arial";
-  ctx.filltext('hallo',400,225);
+  ctx.fillText('hallo',400,225);
 }
 
 function resize(){

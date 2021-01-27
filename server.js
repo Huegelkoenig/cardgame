@@ -138,37 +138,26 @@ server.listen(PORT || 8322, () => {
 
 
 
+
 /*------- socket.io -----------------------------------------*/
 /*------- socket.io -----------------------------------------*/
 /*------- socket.io -----------------------------------------*/
 const socketio = require('socket.io');
 const io = socketio.listen(server, {cookie: false});
 
+//verify user via sessionID BEFORE the 'connection' event
+io.use((socket,next)=>{ //this will be executed only once per connection, see https://socket.io/docs/v3/middlewares
+  console.log(`${misc.DateToString(new Date())}: Middleware: User '${socket.handshake.query.username}' tries to connect to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}' and socket.id '${socket.id}'`);
+  dbScripts.validateSessionID(socket,next);
+})
 
-io.on('connection', async (socket) => {
-  console.log(`${misc.DateToString(new Date())}: User '${socket.handshake.query.username}' tries to connect to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}' and socket.id '${socket.id}'`);
-  //disconnect socket immediatelly, if sessionID is invalid (this should only happen if the user deleted his account but still has an authToken (e.g. on another device) or the DB is attacked)
-  //TODO: unpromise!
-  // dbScripts.validateSessionID(socket, cardgame.init())
-  let sessionIDisValid;
-  try{  //used a promise here, since mySQL queries might take some time to respond and cardgame.init() shall not be run, while the sessionID isn't validated
-    sessionIDisValid = await dbScripts.validateSessionID(socket);
-  }
-  catch(err){
-    //socket.emit('disconnectionMessage', err.usermsg);
-    //socket.disconnect(true);
-    err.log(`logging at server.js at io.on('connection',...), line ${158/*LL*/}`);
-    return;
-  }
-  //socket connection is valid! user can be identified via socket.handshake.query.username
-  if (sessionIDisValid){
-    cardgame.init(socket);
-  }
-  else{
-    //this shouldn't happen, since, if sessionID is invalid, an error (new Status) will be thrown => DELETE: (or leave it??)
-    new Status({status:'error', file:'server.js', func: `io.on('connection',...)`, line: 167/*LL*/, date:DateToString(new Date()), msg: `dbScripts.validateSessionID(socket) didn't throw an error, but also didnt resolve true`})
-                  .log(`logging at server.js, function io.on('connection',...), line ${168/*LL*/}`);
-    socket.emit('disconnectionMessage', `Oups, looks like you found a bug! Error-Code "SER:${169/*LL*/}`);
-    socket.disconnect(true);
-  }
+io.on('connection', (socket) => {
+  socket.username = socket.handshake.query.username;
+  console.log(`the user ${socket.username} connected`);
+  socket.on('disconnect', (reason) => {
+    console.log(`the user ${socket.username} disconnected due to `, reason);
+  });
+  socket.on('click',()=>{console.log(`${socket.username} clicked`)});
+
+  cardgame.init(socket);
 });
