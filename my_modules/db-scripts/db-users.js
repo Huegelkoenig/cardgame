@@ -460,7 +460,7 @@ arguments:
 return:
   returns a promise, which resolves a Status object with status: 'ok' if the sessionId matches the stored sessionID, else rejects a Status object with the error corresponding message
 */
-function validateSessionID(socket,next){
+function validateSessionID(socket,callback){
   if (!validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
     const _err = new Error("not authorized");
@@ -496,9 +496,9 @@ function validateSessionID(socket,next){
     //    return next(_err);
     //  }
     //  socket.username = socket.handshake.query.username;
-    //  return next(); //next() is called here, so i don't have to use a promise and wait for the response of this function in the middleware
+    //  return callback(); //callback should usually be next(), which is called here, to avoid promises in the middleware
     //});
-    return next(); //delete if uncomment pool.query(...) above
+    return callback(); //delete if uncomment pool.query(...) above  
   });
 }
 

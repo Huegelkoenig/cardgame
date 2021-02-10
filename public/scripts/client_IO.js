@@ -1,12 +1,20 @@
 //the following code gets executed after the user logged in and is served the game.html
+//this way, we also prevent socket to be a global variable
+//but can't call socket.emit from outside!?!
 let username;
+var loadTime;
 window.onload = ()=>{
+  loadTime = window.performance.timing.domContentLoadedEventEnd-window.performance.timing.navigationStart; 
+  console.log('Page load time issss '+ loadTime);
   
+
+
   
   let cardgameSessionCookie = JSON.parse(getCookie('cardgameSession')); //cookie was set immediately before the game.html was sent
   //TODO: rewrite as xmlHttpRequest()... onload(()=>{socket.connect})
   let socket = io('https://huegelkoenig.dynv6.net:8322', {query: {username: cardgameSessionCookie.username, sessionID: cardgameSessionCookie.sessionID}, autoConnect: false});  //TODO: change host //TODO: send JWT token instead of username and sessionID (??)
   socket.username = cardgameSessionCookie.username;
+  username = socket.username;  //DELETE: just for testing
   document.cookie = "cardgameSession=; max-age=1; sameSite=Strict; __Secure=True;"  // "delete" cookie with session details (for security reasons ? not sure, if this really helps)
   cardgameSessionCookie = ''; // for security reasons (? not sure, if this really helps)  //TODO: check if necesary
   socket.connect(); 
@@ -23,10 +31,10 @@ window.onload = ()=>{
     
   });
 
-
-
+  //socket.on('del_info',()=>{console.log('del', socket.io.opts.query.username); socket.io.opts.query.username = 'gelöscht'});
   socket.on('connectionValidated',()=>{
     initCanvas();
+
   });
 
   
@@ -53,7 +61,10 @@ window.onload = ()=>{
     location.replace('/');
   })
   
-  document.getElementById('CardgameCanvas').addEventListener('click',()=>{socket.emit('click')});
+
+  //for testing
+  document.getElementById('CardgameCanvas').addEventListener('click',()=>{console.log('socket :>> ', socket); socket.emit('click')});
+  window.addEventListener('keydown',(evt)=>{console.log('evt :>> ', evt); socket.emit('key')});
 
   
 }

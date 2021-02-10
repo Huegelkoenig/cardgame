@@ -5,6 +5,7 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const bcrypt = require('bcrypt'); //DELETE: after login is moved to db-users.js
+const { PerformanceObserver, performance } = require('perf_hooks');
 
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -14,6 +15,7 @@ const dbScripts = require('./my_modules/db-scripts/db-scripts.js');
 const Status = require('./my_modules/status/class_status.js');
 const cardgame = require('./my_modules/cardgame/cardgame.js');
 const misc = require('./my_modules/misc/misc.js')
+
 
 
 const jwt = require('jsonwebtoken');
@@ -57,11 +59,13 @@ app.use('/', bodyParser.urlencoded({extended:true}));
 
 // if no auth token exists (or is invalid), the login page will be sent. Else, the user will be logged in
 app.get('/', (req,res,next) => {
+  let startTime = performance.now()
   jwt.verify(req.cookies['cardgameAuthToken'], myJWTsecret, (err, token)=>{
     if (err){ //cardgameAuthToken is invalid, is expired or doesn't exist, user has to login manually
-      res.status(200).sendFile(__dirname+'/public/login.html'); 
+      res.status(200).sendFile(__dirname+'/public/login.html');
       return;
     }
+    console.log('performance.now()-startTime :>> ', performance.now()-startTime);
     dbScripts.loginResponse(req,res,token);
   });
 });
@@ -154,10 +158,14 @@ io.use((socket,next)=>{ //this will be executed only once per connection, see ht
 io.on('connection', (socket) => {
   socket.username = socket.handshake.query.username;
   console.log(`the user ${socket.username} connected`);
+  socket.emit('del_info');
   socket.on('disconnect', (reason) => {
-    console.log(`the user ${socket.username} disconnected due to `, reason);
+    console.log(`${misc.DateToString(new Date())}: User ${socket.username} disconnected due to `, reason);
   });
+  
+  //for testing
   socket.on('click',()=>{console.log(`${socket.username} clicked`)});
+  socket.on('key',()=>{console.log(`${socket.username} will be disconnected`); socket.disconnect(true);});
 
   cardgame.init(socket);
 });
