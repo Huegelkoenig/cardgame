@@ -1,17 +1,33 @@
 body {
-    background-color:rgb(83, 83, 83);
+    background-color:rgb(176, 255, 133);
     color:rgb(0, 0, 0);
 }
 html, body {
-  margin: 0 !important;
-  padding: 0 !important;
   overflow: hidden;
 }
 
-canvas {
-  width: 800px;
-  height: 450px;
-  overflow: hidden;
-  display: block;
+.views {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#fullscreenCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   border: none;
+  z-index: 2;
+}
+
+#cardgameCanvas {
+  position: absolute;
+  border: none;
+  z-index: 3;
+}
+
+#error{
+  background-color:rgb(241, 163, 163);
+  color:rgb(0, 0, 0);
 }

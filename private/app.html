@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>cardgame</title>
+  <link rel="stylesheet" type="text/css" href="styles/style.css">
+</head>
+<body>
+
+  <!-- LOGIN VIEW-->
+  <div class="views" id="loginView" hidden>
+    <form id="loginForm" action="/login" method="POST">
+      <p>Login</p>
+      <input type="text" placeholder="Enter your username" size="30" name="loginusername" required><br>
+      <input type="password"  placeholder="Enter your password" size="60" name="loginpassword" required><br>
+      <input type="submit" name="submit">
+    </form>
+    <br>
+    <p id="loginMsg"><br></p>
+    <br>
+    <a href="" id="login_register">Register</a> 
+    <br>
+    <br>
+    <a href="" id="login_recover">I forgot my username and/or password</a>
+
+    <!-- RESET VIEW is called from within app-->
+  </div>
+  <!-- LOGIN VIEW END -->
+
+
+  <!-- REGISTER VIEW -->
+  <div class="views" id="registerView" hidden>
+    <form id="registerForm" action="/register" method="post">
+      <p>register as a new user</p>
+      <input type="text" placeholder="Username" size="30" name="registerusername" required><br>
+      <input type="email" placeholder="email" size="65" name="registeremail"><br>
+      <input type="password" id="pw" placeholder="Password" size="50" name="registerpassword" required><br>
+      <input type="password" id="pwc" placeholder="Confirm password" size="50" name="registerpasswordconfirmation" required><br>
+      <input type="submit" id="submit" disabled>
+    </form>
+    Your email is only used to reset your password if you forgot your username.<br>
+    It may will be used to inform you about changes to this game in the future, but it will <b>NEVER</b> be shared with ANY third party.
+    <p id="registerMsg"><br></p>
+    <a href="" id="register_login">I am already registered. Get me back to the login page</a>
+  </div>
+  <!-- REGISTER VIEW END -->
+
+
+  <!-- RECOVER VIEW -->
+  <div class="views" id="recoverView" hidden>
+    <p>recover your username and/or password</p>
+    <form id="recoverForm" action="/recover" method="post">
+        <p>enter your email adress</p>
+        <input type="txt" placeholder="email" size="65" name="recoveryMail" required>
+         <input type="submit">
+    </form>
+    <br>
+    <p id="recoverMsg"><br></p>
+    <br>
+    <a href="" id="recover_login">i remember my credentials, get me back to the login page</a>
+  </div>
+  <!-- RECOVER VIEW END-->
+
+  <!-- RESET VIEW -->
+  <div class="views" id="resetView" hidden>
+    <form id="resetForm" action="/reset" method="post">
+      <p>To reset your password, please enter your username and a password</p>
+      <input type="text" placeholder="Username" size="30" name="resetusername" required><br>
+      <input type="password" id="npw" placeholder="New password" size="50" name="resetpassword" required><br>
+      <input type="password" id="npwc" placeholder="Confirm new password" size="50" name="resetpasswordconfirmation" required><br>
+      <input type="submit" id="submit">
+    </form>
+    <p id="resetMsg">Until you submit your new password, you can still use your old one.<br></p>
+    <a href="" id="reset_login">I don't want to change my password, get me back to the login page!</a>
+  </div>
+  <!-- RESET VIEW END-->
+
+  <!-- CANVAS VIEW -->
+  <!-- 800:450 => 16:9 => aspect ratio of most modern smartphones in landscape mode  //TODO: MACH'S ANDERS!!! lookup "css-pixels"-->
+  <!-- https://stackoverflow.com/questions/5063489/how-can-you-get-the-css-pixel-device-pixel-ratio -->
+  <!-- https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio -->
+  <!-- https://blogs.perficient.com/2014/12/24/css-pixel-ratio-or-how-big-is-my-phone/ -->
+  <div class="views" id="canvasView" hidden>
+    <p id="canvasMsg">connecting to server</p>
+    <canvas id="fullscreenCanvas"></canvas>
+    <canvas id="cardgameCanvas" width=2000 height=900></canvas>
+  </div>
+  <!-- CANVAS VIEW END -->
+
+  <!-- ERROR VIEW -->
+  <div class="views" id="errorView" hidden>
+    Oups, something went wrong!<br>
+    <p id="errorMsg"></p><br>
+    <a href="" id="error_login">Take me back to the starting page</a>
+  </div>
+  <!-- ERROR VIEW END -->
+
+
+
+  <script src="/scripts/globals.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/scripts/class_asset.js"></script>
+  <script src="/scripts/class_coords.js"></script>
+  <script src="/scripts/class_sprite.js"></script>
+  <script src="/scripts/class_animation.js"></script>
+  <script src="/scripts/class_item.js"></script>
+  <script src="/scripts/class_squircle.js"></script>
+  <script src="/scripts/views.js"></script>
+  <script src="/scripts/client_IO.js"></script>
+  <script src="/scripts/canvas_init.js"></script>
+</body>
+</html>
