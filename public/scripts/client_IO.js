@@ -1,11 +1,9 @@
-//the following code gets executed after the user logged in
-//this way, we  prevent socket to be a global variable
-//but can't call socket.emit from outside!?!
 var loadTime;
+var socket;
 function connectToSocketIO(response){
   //loadTime = window.performance.timing.domContentLoadedEventEnd-window.performance.timing.navigationStart; 
   //console.log('Page load time issss '+ loadTime);
-  let socket = io('https://localhost:8322', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
+  socket = io('https://localhost:8322', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
   //socket.username = response.username;
   socket.connect(); 
   
@@ -41,9 +39,6 @@ function connectToSocketIO(response){
     document.getElementById('canvasMsg').hidden = false;
     document.getElementById('canvasMsg').innerHTML = 'SOCKETIO connection validated. Initializing canvas.<br>If you can see this, theres somethin wrong.<br><a href="/">Please reload the page</a>';
     initCanvas(response);
-    //for testing
-  document.getElementById('cardgameCanvas').addEventListener('click',(evt)=>{console.log('x: ', evt.x, 'y: ', evt.y, 'ratio: ', ratio); socket.emit('click',(evt.x-rect.left)/ratio,(evt.y-rect.top)/ratio)});
-  window.addEventListener('keydown',(evt)=>{console.log('evt :>> ', evt); socket.emit('key', evt.key)});
   });
 
   

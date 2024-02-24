@@ -1,24 +1,24 @@
 var cardgameCanvas;
 var ctx;
-var rect;
-var ratio;
 var fullscreenCanvas;
 var fullscreenctx;
+var rect;
+var ratio;
+
 function initCanvas(response){
-  console.log('init');
   document.getElementById('canvasMsg').hidden = true;
   cardgameCanvas = document.getElementById('cardgameCanvas');
+  /** @type {CanvasRenderingContext2D} **/
+  ctx = cardgameCanvas.getContext('2d');
   fullscreenCanvas = document.getElementById('fullscreenCanvas');
   /** @type {CanvasRenderingContext2D} **/
-  ctx = cardgameCanvas.getContext('2d');  
-  /** @type {CanvasRenderingContext2D} **/
   fullscreenctx = fullscreenCanvas.getContext('2d');  
-  window.addEventListener('resize',()=>{resize(response)});  
+  cardgameCanvas = document.getElementById('cardgameCanvas');
+  window.addEventListener('resize',()=>{resize(response)});
   resize(response)
 }
 
 function resize(response){
-  console.log('resize');
   fullscreenCanvas.width = window.innerWidth;
   fullscreenCanvas.height = window.innerHeight;
   if (window.innerWidth/window.innerHeight < cardgameCanvas.width/cardgameCanvas.height){
@@ -44,9 +44,7 @@ function resize(response){
 
 
 
-function fillit(response){  
-  console.log('fillit');
-  fullscreenctx = fullscreenCanvas.getContext('2d');
+function fillit(response){
   fullscreenctx.fillStyle = 'lightblue';
   fullscreenctx.fillRect(0,0,fullscreenCanvas.width, fullscreenCanvas.height);
   ctx.fillStyle = '#AAAAAA';
@@ -71,5 +69,6 @@ function fillit(response){
   ctx.fill();
   ctx.stroke();
   ctx.font = "30px Arial";
-  ctx.fillText('hi ' + response.username + '. ',250,225);  
+  ctx.fillText('hi ' + response.username + '. ',250,225);
+  inputs = new Inputs();
 }

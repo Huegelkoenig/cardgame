@@ -81,7 +81,7 @@ app.post('/auth', (req,res)=>{
       res.status(401).send(JSON.stringify({view:'loginView', msg:''}));
       return;
     }
-    dbScripts.loginResponse(req,res,token); //TODO:
+    dbScripts.loginResponse(req,res,token); 
   });
 });
 
@@ -89,13 +89,13 @@ app.post('/auth', (req,res)=>{
 app.post('/login', dbScripts.validateCredentials);
 
 
-//TODO: OLD:
+
 //user submits a recover attemp
 app.post('/recover', dbScripts.recoverCredentials);
 
 //user clicked on the reset link provided by the email sent in dbScripts.recoverCredentials
 app.get('/reset/:recoverID', (req,res,next)=>{
-  res.status(200).sendFile(__dirname+'/private/resetpassword.html');   //TODO:  tatsächlich komplett neue Seite nur zum passwortreseten?
+  res.status(200).sendFile(__dirname+'/private/resetpassword.html');   
 });
 
 
@@ -137,14 +137,13 @@ io.use((socket,next)=>{ //this will be executed only once per connection, see ht
 io.on('connection', (socket) => {
   socket.username = socket.handshake.query.username;
   console.log(`the user ${socket.username} connected`);
-  socket.emit('del_info');
   socket.on('disconnect', (reason) => {
     console.log(`${misc.DateToString(new Date())}: User ${socket.username} disconnected due to `, reason);
   });
   
   //for testing
-  socket.on('click',(x,y)=>{console.log(`${socket.username} clicked at x: ` + x + '   y: '+ y)});
-  socket.on('key',(alpha)=>{console.log(`${socket.username} pressed ` + alpha); if(alpha == "Escape"){socket.disconnect()};});
+  socket.on('press',(x,y)=>{console.log(`${socket.username} pressed at x: ` + x + '   y: '+ y)});
+  socket.on('release',(x,y)=>{console.log(`${socket.username} released at x: ` + x + '   y: '+ y)});
 
   cardgame.init(socket);
 });
