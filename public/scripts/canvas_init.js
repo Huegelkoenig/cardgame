@@ -3,39 +3,41 @@ var ctx;
 var fullscreenCanvas;
 var fullscreenctx;
 var rect;
-var ratio;
+var scale;
 
 function initCanvas(response){
   document.getElementById('canvasMsg').hidden = true;
-  cardgameCanvas = document.getElementById('cardgameCanvas');
-  /** @type {CanvasRenderingContext2D} **/
-  ctx = cardgameCanvas.getContext('2d');
   fullscreenCanvas = document.getElementById('fullscreenCanvas');
   /** @type {CanvasRenderingContext2D} **/
   fullscreenctx = fullscreenCanvas.getContext('2d');  
   cardgameCanvas = document.getElementById('cardgameCanvas');
-  window.addEventListener('resize',()=>{resize(response)});
-  resize(response)
+  /** @type {CanvasRenderingContext2D} **/
+  ctx = cardgameCanvas.getContext('2d');
+  window.addEventListener('resize',()=>{setTimeout(()=>{resize(response)},500)});
+  setTimeout(()=>{resize(response)},500);
+  inputs = new Inputs();
 }
 
 function resize(response){
   fullscreenCanvas.width = window.innerWidth;
   fullscreenCanvas.height = window.innerHeight;
-  if (window.innerWidth/window.innerHeight < cardgameCanvas.width/cardgameCanvas.height){
-    //fullscreen > canvas.style.height
-    cardgameCanvas.style.width = window.innerWidth+'px';
-    cardgameCanvas.style.height = Math.floor(window.innerWidth*cardgameCanvas.height/cardgameCanvas.width)+'px';
-    cardgameCanvas.style.setProperty('top', `calc( ( ${window.innerHeight}px - ${cardgameCanvas.style.height} ) / 2`);
+  if (fullscreenCanvas.width/fullscreenCanvas.height < cardgameCanvas.width/cardgameCanvas.height){
+    //i.e. fullscreen > canvas.style.height
+    scale = fullscreenCanvas.width/cardgameCanvas.width;
+    cardgameCanvas.style.width = fullscreenCanvas.width+'px';
+    cardgameCanvas.style.height = Math.floor(scale*cardgameCanvas.height)+'px';
+    cardgameCanvas.style.setProperty('top', `calc( ( ${fullscreenCanvas.height}px - ${cardgameCanvas.style.height} ) / 2`);
     cardgameCanvas.style.left = 0;
-    ratio = window.innerWidth/cardgameCanvas.width;
+    
   }
   else{
-    //fullscreen > canvas.style.width
-    cardgameCanvas.style.width = Math.floor(window.innerHeight*cardgameCanvas.width/cardgameCanvas.height)+'px';
-    cardgameCanvas.style.height = window.innerHeight+'px';
+    //i.e. fullscreen > canvas.style.width
+    scale = fullscreenCanvas.height/cardgameCanvas.height;
+    cardgameCanvas.style.width = Math.floor(scale*cardgameCanvas.width)+'px';
+    cardgameCanvas.style.height = fullscreenCanvas.height+'px';
     cardgameCanvas.style.top = 0;
-    cardgameCanvas.style.setProperty('left', `calc( ( ${window.innerWidth}px - ${cardgameCanvas.style.width} ) / 2`);
-    ratio = window.innerHeight/cardgameCanvas.height;
+    cardgameCanvas.style.setProperty('left', `calc( ( ${fullscreenCanvas.width}px - ${cardgameCanvas.style.width} ) / 2`);
+    
   } 
   rect = cardgameCanvas.getBoundingClientRect();
   console.log(rect);
@@ -69,6 +71,9 @@ function fillit(response){
   ctx.fill();
   ctx.stroke();
   ctx.font = "30px Arial";
-  ctx.fillText('hi ' + response.username + '. ',250,225);
-  inputs = new Inputs();
+  ctx.fillText(`hi ${response.username} ${fullscreenCanvas.width} ${fullscreenCanvas.height} ${screen.width} ${screen.height} ${window.devicePixelRatio} ${window.visualViewport.scale}`,250,225);
+  
+
+  //lade grafiken etc
+  //starte drawing loop
 }

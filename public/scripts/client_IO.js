@@ -3,7 +3,7 @@ var socket;
 function connectToSocketIO(response){
   //loadTime = window.performance.timing.domContentLoadedEventEnd-window.performance.timing.navigationStart; 
   //console.log('Page load time issss '+ loadTime);
-  socket = io('https://localhost:8322', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
+  socket = io('https://huegelkoenig.dynv6.net:8322/', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
   //socket.username = response.username;
   socket.connect(); 
   

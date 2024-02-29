@@ -63,12 +63,12 @@ function showView(viewID) {
       pwc.addEventListener('keyup', validatePW);
       function validatePW(){
         if (pw.value === pwc.value){
-          document.getElementById('submit').disabled = false;
+          document.getElementById('registersubmit').disabled = false;
           pwc.style.backgroundColor = '#FFFFFF';
           document.getElementById('msg').innerHTML = '<br>';
         }
         else{
-          document.getElementById('submit').disabled = true;
+          document.getElementById('registersubmit').disabled = true;
           pwc.style.backgroundColor = '#e34f52';
           document.getElementById('msg').innerHTML = 'passwords missmatch';
         }

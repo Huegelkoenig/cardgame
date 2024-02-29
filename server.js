@@ -36,7 +36,17 @@ httpApp.get('*', (req, res, next) => {
     console.log('HTTP GET');
     res.status(200).sendFile(__dirname+'/public/http.html');
 });
-httpServer.listen(HTTPPORT,() => {
+/*--httpServer.on('error', (e) => {
+  //if (e.code === 'EADDRINUSE') {
+    console.error('Address in use, retrying...');
+    setTimeout(() => {
+      httpServer.close();
+      httpServer.listen({port: HTTPPORT, host: acthost});
+    }, 1000);
+ // }
+}); --*/
+httpServer.listen({port:HTTPPORT}, (err) => {
+  if(err){console.log(err);}
   console.log(`http listening on port ${HTTPPORT}`);
  });
 /*------ end of http server ---------------------------------*/
@@ -110,10 +120,12 @@ app.post('/register', dbScripts.registerUser);
 // any other request to any other path
 app.all('*',(req,res,next)=>{res.status(404).sendFile(__dirname+'/private/404.html');});
 
-const HOST = '*';
-//const HOST = '92.116.145.194';  //  server.listen(PORT, HOST, ()=>{...})
+const HOST = '92.117.123.150';  //  server.listen(PORT, HOST, ()=>{...})
+const hostname = '0.0.0.0';
+const hostall = '*';
+const acthost = HOST;
 server.listen(HTTPSPORT, () => {
-  console.log(`https listening on port ${HTTPSPORT} on host ${HOST}`);
+  console.log(`https listening on port ${HTTPSPORT}` ); //on host ${acthost}`);
  });
 
 /*---- end of https server ----------------------------------*/

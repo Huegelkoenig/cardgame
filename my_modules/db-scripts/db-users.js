@@ -434,28 +434,28 @@ function validateSessionID(socket,callback){
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
     const _err = new Error("not authorized");
     _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 434/*LL*/, date:misc.DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-    return next(_err);
+    return callback(_err);
   }
   pool.query(`SELECT ${SESSIONID} FROM ${TABLE} WHERE ${USERNAME} = ?;`, socket.handshake.query.username, (err, sqlResult)=>{
     if (err){
       const _err = new Error("not authorized");
       _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 440/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${440/*LL*/}"`, error: err})};
-      return next(_err);
+      return callback(_err);
     }
     if (sqlResult.length === 0){ //no user with given username was found  (this may happens, if a user still has a valid authtoken, but is deleted from the DB - or if someone tries to attack the DB)
       const _err = new Error("not authorized");
       _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 445/*LL*/, date:misc.DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-      return next(_err);
+      return callback(_err);
     }
     if (sqlResult[0][SESSIONID].length == 0){
       const _err = new Error("not authorized");
       _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 450/*LL*/, date:misc.DateToString(new Date()), msg: `there's no sessionID stored to this username`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `unknown`})};
-      return next(_err);
+      return callback(_err);
     }
     if (socket.handshake.query.sessionID.length!==32 || socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){ //given sessionID doesn't match stored sessionID or has an invalid format  (this should only happen, if someone tries to attack the DB)
       const _err = new Error("not authorized");
       _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 455/*LL*/, date:misc.DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-      return next(_err);
+      return callback(_err);
     }
     //sessionID is ok, delete sessionID from DB, to prevent capturing, reuse, etc....  //TODO: don't delete sessionID. rethink this part!
     //pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, ['', socket.handshake.query.username], (err,sqlResult)=>{

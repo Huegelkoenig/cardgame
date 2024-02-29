@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1; user-scalable=0;"/>
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>cardgame</title>
   <link rel="stylesheet" type="text/css" href="styles/style.css">
@@ -15,7 +15,7 @@
       <p>Login</p>
       <input type="text" placeholder="Enter your username" size="30" name="loginusername" required><br>
       <input type="password"  placeholder="Enter your password" size="60" name="loginpassword" required><br>
-      <input type="submit" name="submit">
+      <input type="submit" id="loginsubmit">
     </form>
     <br>
     <p id="loginMsg"><br></p>
@@ -38,7 +38,7 @@
       <input type="email" placeholder="email" size="65" name="registeremail"><br>
       <input type="password" id="pw" placeholder="Password" size="50" name="registerpassword" required><br>
       <input type="password" id="pwc" placeholder="Confirm password" size="50" name="registerpasswordconfirmation" required><br>
-      <input type="submit" id="submit" disabled>
+      <input type="submit" id="registersubmit" disabled>
     </form>
     Your email is only used to reset your password if you forgot your username.<br>
     It may will be used to inform you about changes to this game in the future, but it will <b>NEVER</b> be shared with ANY third party.
@@ -54,7 +54,7 @@
     <form id="recoverForm" action="/recover" method="post">
         <p>enter your email adress</p>
         <input type="txt" placeholder="email" size="65" name="recoveryMail" required>
-         <input type="submit">
+         <input type="submit" id="recoversubmit">
     </form>
     <br>
     <p id="recoverMsg"><br></p>
@@ -70,7 +70,7 @@
       <input type="text" placeholder="Username" size="30" name="resetusername" required><br>
       <input type="password" id="npw" placeholder="New password" size="50" name="resetpassword" required><br>
       <input type="password" id="npwc" placeholder="Confirm new password" size="50" name="resetpasswordconfirmation" required><br>
-      <input type="submit" id="submit">
+      <input type="submit" id="resetsubmit">
     </form>
     <p id="resetMsg">Until you submit your new password, you can still use your old one.<br></p>
     <a href="" id="reset_login">I don't want to change my password, get me back to the login page!</a>
