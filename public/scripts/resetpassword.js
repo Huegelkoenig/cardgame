@@ -1,7 +1,7 @@
-let response = {};
-response.msg = '';
 window.onload = ()=>{
-  showView('resetView');
+  let response = {view: 'resetView',
+                  msg : ''};
+  showView(response);
 }
 
 //makes a POST request to the given route with the optionally given $_data
@@ -38,29 +38,28 @@ async function post(route, $_data=undefined){
   }
 }
 
-function showView(viewID) {
+function showView(response) {
   document.querySelectorAll(`.views`).forEach( (el)=>{el.hidden = true;} );
   //disable previous EventListeners
   document.querySelectorAll('.views:not(.canvasView)').forEach((view)=>{
     document.getElementById(view.id).outerHTML = document.getElementById(view.id).outerHTML;
   });
   //setup new EventListeners and show additional messages
-  switch(viewID){
+  switch(response.view){
     case 'resetView':
       document.getElementById('resetForm').addEventListener('submit', submitForm);
       document.getElementById('resetMsg').innerHTML = response.msg;
-      break;
+    break;
     case 'errorView':
       document.getElementById('errorMsg').innerHTML = response.msg;
-      document.getElementById('error_login').addEventListener('click', (evt)=>{evt.preventDefault();console.log('click error_login'); response.msg=''; showView('loginView');})        //DELETE: console.log
-      break;
+    break;
     default:
-      alert(`error in switch statement, resetpassword.js, line ${58/*LL*/}`);
-      console.log(`error in switch statement, line ${59/*LL*/}`);
-      console.log('viewID in switch statement is:', viewID);
-      break;
+      alert(`error in switch statement, resetpassword.js, line ${57/*LL*/}`);
+      console.log(`error in switch statement, line ${58/*LL*/}`);
+      console.log('response.view in switch statement is:', response.view);
+    break;
   }
-  document.getElementById(viewID).hidden = false;
+  document.getElementById(response.view).hidden = false;
 }
 
 async function submitForm(evt){
@@ -73,7 +72,7 @@ async function submitForm(evt){
   }
   let urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
   let resetID = window.location.pathname.split('/');
-  response = JSON.parse(await post(this.attributes.action.nodeValue + '/' + resetID[resetID.length-1], urlEncodedData));
+  let response = JSON.parse(await post(this.attributes.action.nodeValue + '/' + resetID[resetID.length-1], urlEncodedData));
   this.submit.disabled = false;
-  showView(response.view);
+  showView(response);
 }

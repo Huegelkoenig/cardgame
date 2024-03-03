@@ -1,8 +1,8 @@
 class Inputs{
   constructor(){
       this.screenPosition = new Point2D() //relative to screen   //TODO: probably not needed => delete all occurances below
-      this.absPosition = new Point2D();   //relative to cardgameCanvas //TODO: probably not needed => delete all occurances below
-      this.position = new Point2D();      //relative to cardgameCanvas, regarding scale
+      this.absPosition = new Point2D();   //relative to cardgameCanvas rectTODO: probably not needed => delete all occurances below
+      this.position = new Point2D();      //relative to cardgameCanvas,rect cardgameCanvas.scale
       this.mouseDown = false;
       this.touched = false;
       this.touchId = 0;
@@ -23,10 +23,10 @@ class Inputs{
         this.pressed = true;
         this.screenPosition.x = evt.x;
         this.screenPosition.y = evt.y;
-        this.absPosition.x = evt.x-rect.x;
-        this.absPosition.y = evt.y-rect.y;
-        this.position.x = (evt.x-rect.x)/scale;
-        this.position.y = (evt.y-rect.y)/scale;
+        this.absPosition.x = evt.x-cardgameCanvas.rect.x;
+        this.absPosition.y = evt.y-cardgameCanvas.rect.y;
+        this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+        this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
         this.pressHandler(evt);
     }
   }
@@ -35,10 +35,10 @@ class Inputs{
     if(this.mouseDown){
       this.screenPosition.x = evt.x;
       this.screenPosition.y = evt.y;
-      this.absPosition.x = evt.x-rect.x;
-      this.absPosition.y = evt.y-rect.y;
-      this.position.x = (evt.x-rect.x)/scale;
-      this.position.y = (evt.y-rect.y)/scale;
+      this.absPosition.x = evt.x-cardgameCanvas.rect.x;
+      this.absPosition.y = evt.y-cardgameCanvas.rect.y;
+      this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+      this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
       this.dragHandler(evt);
     }
   }
@@ -60,10 +60,10 @@ class Inputs{
       console.log(evt);
       this.screenPosition.x = evt.changedTouches[0].pageX;
       this.screenPosition.y = evt.changedTouches[0].pageY;
-      this.absPosition.x = evt.changedTouches[0].pageX-rect.x;
-      this.absPosition.y = evt.changedTouches[0].pageY-rect.y;
-      this.position.x = (evt.changedTouches[0].pageX-rect.x)/scale;
-      this.position.y = (evt.changedTouches[0].pageY-rect.y)/scale;
+      this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
+      this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
+      this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+      this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
       this.pressHandler(evt);        
     }
   }
@@ -73,10 +73,10 @@ class Inputs{
     if (this.touched && evt.changedTouches[0].identifier == this.touchId){
       this.screenPosition.x = evt.changedTouches[0].pageX;
       this.screenPosition.y = evt.changedTouches[0].pageY;
-      this.absPosition.x = evt.changedTouches[0].pageX-rect.x;
-      this.absPosition.y = evt.changedTouches[0].pageY-rect.y;
-      this.position.x = (evt.changedTouches[0].pageX-rect.x)/scale;
-      this.position.y = (evt.changedTouches[0].pageY-rect.y)/scale;
+      this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
+      this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
+      this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+      this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
       this.dragHandler(evt);
     }
   }
@@ -100,23 +100,24 @@ class Inputs{
   }
 
   pressHandler(evt){
-    console.log('press => x: ',this.position.x, 'y: ', this.position.y, 'scale: ', scale);
+    //TODO: just for testing
+    console.log('press => x: ',this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
     socket.emit('press', this.position.x, this.position.y)
-    ctx.beginPath();
-    ctx.moveTo(this.position.x, this.position.y);
+    cardgameCanvas.ctx.beginPath();
+    cardgameCanvas.ctx.moveTo(this.position.x, this.position.y);
   }
 
   dragHandler(evt){
+    //TODO: just for testing
     console.log('drag');
-    ctx.lineTo(this.position.x, this.position.y);
-    ctx.stroke();
+    cardgameCanvas.ctx.lineTo(this.position.x, this.position.y);
+    cardgameCanvas.ctx.stroke();
   }
 
   releaseHandler(evt){
-    console.log('release => x: ', this.position.x, 'y: ', this.position.y, 'scale: ', scale);
+    //TODO: just for testing
+    console.log('release => x: ', this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
     socket.emit('release', this.position.x, this.position.y)
-    ctx.stroke();
+    cardgameCanvas.ctx.stroke();
   }  
 }
-
-var inputs;

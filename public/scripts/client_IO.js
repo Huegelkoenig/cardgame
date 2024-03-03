@@ -1,4 +1,3 @@
-var loadTime;
 var socket;
 function connectToSocketIO(response){
   //loadTime = window.performance.timing.domContentLoadedEventEnd-window.performance.timing.navigationStart; 
@@ -6,14 +5,15 @@ function connectToSocketIO(response){
   socket = io('https://huegelkoenig.dynv6.net:8322/', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
   //socket.username = response.username;
   socket.connect(); 
-  
+
 
   socket.on("connect_error", (err) => {   //This is fired when the server does not accept the connection in a middleware function
     err.data.status.log()    // DEBUG: CHECK if this interferes with socket.on('error',...) below  (?)
     document.getElementById('canvasMsg').hidden = true;
-    document.getElementById('canvasMsg').innerHTML = `There was an connection error. Code: client_IO: ` + 17/*LL*/;
+    document.getElementById('canvasMsg').innerHTML = `There was an connection error. Code: client_IO: ` + 13/*LL*/;
     console.log(`connect_error due to ${err.message}`);
   });
+
 
   socket.on('error', (error) => {
     if (error == 'userIDtimedout'){
@@ -42,15 +42,10 @@ function connectToSocketIO(response){
   });
 
   
-
-
-
-
   //sent by the server, just before the client gets disconnected by the server
   socket.on('disconnectionMessage',(msg)=>{
     document.getElementById('canvasMsg').innerHTML = `${socket.username} with id ${socket.id} has been disconnected, with the following message: <br>` + msg + '<br><a href="/">Get me back to the starting page</a>';    
 
   })
-  
 }
 
