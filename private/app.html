@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1; user-scalable=0;"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>cardgame</title>
   <link rel="stylesheet" type="text/css" href="styles/style.css">
@@ -54,7 +54,7 @@
     <form id="recoverForm" action="/recover" method="post">
         <p>enter your email adress</p>
         <input type="txt" placeholder="email" size="65" name="recoveryMail" required>
-         <input type="submit" id="recoversubmit">
+        <input type="submit" id="recoversubmit">
     </form>
     <br>
     <p id="recoverMsg"><br></p>
@@ -83,8 +83,8 @@
   <!-- https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio -->
   <!-- https://blogs.perficient.com/2014/12/24/css-pixel-ratio-or-how-big-is-my-phone/ -->
   <div class="views" id="canvasView" hidden>
-    <p id="canvasMsg">connecting to server</p>
-    <canvas id="fullscreenCanvas"></canvas>
+    <p id="canvasMsg">connecting to IO-server</p>
+    <canvas id="fullscreenCanvas" width=1 height=1></canvas>
     <canvas id="cardgameCanvas" width=2000 height=900></canvas>
   </div>
   <!-- CANVAS VIEW END -->
@@ -93,24 +93,27 @@
   <div class="views" id="errorView" hidden>
     Oups, something went wrong!<br>
     <p id="errorMsg"></p><br>
-    <a href="" id="error_login">Take me back to the starting page</a>
+    <a href="/" id="error_login">Take me back to the starting page</a>
   </div>
   <!-- ERROR VIEW END -->
 
 
 
-  <script src="/scripts/globals.js"></script>
+  
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/scripts/class_asset.js"></script>
-  <script src="/scripts/class_coords.js"></script>
-  <script src="/scripts/class_sprite.js"></script>
   <script src="/scripts/class_animation.js"></script>
-  <script src="/scripts/class_item.js"></script>
-  <script src="/scripts/class_squircle.js"></script>
-  <script src="/scripts/views.js"></script>
-  <script src="/scripts/client_IO.js"></script>
-  <script src="/scripts/canvas_init.js"></script>
-  <script src="/scripts/class_point2D.js"></script>
+  <script src="/scripts/class_asset.js"></script>
+  <script src="/scripts/class_canvas.js"></script>
+  <script src="/scripts/class_coords.js"></script>  
   <script src="/scripts/class_inputs.js"></script>
+  <script src="/scripts/class_item.js"></script>
+  <script src="/scripts/class_point2D.js"></script>
+  <script src="/scripts/class_sprite.js"></script>  
+  <script src="/scripts/class_squircle.js"></script>
+  <script src="/scripts/client_IO.js"></script>
+  <script src="/scripts/init_app.js"></script>
+  <script src="/scripts/globals.js"></script>
+  <script src="/scripts/views.js"></script>  
+  
 </body>
 </html>

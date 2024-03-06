@@ -6,6 +6,12 @@ class Canvas{
     this.scale;
   }
 
+  //TODO: benötigt?
+  get width(){return this.canvas.width};
+  set width(w){this.canvas.width = w};
+  get height(){return this.canvas.height};
+  set height(h){this.canvas.width = h};
+
   setProperties(properties){
     for (const [key, value] of Object.entries(properties)) {
       this.canvas[key] = value;
@@ -84,33 +90,31 @@ class FARCanvas extends Canvas{
     this.rect = this.canvas.getBoundingClientRect();
   }
 
+  //DELETE: just for testing
   fill(response){
-    //TODO: just for testing
     this.setctxProperties({fillStyle:   '#AAAAAA',
                            strokeStyle: 'red',
                            lineWidth:   1
                           });
-    this.ctx.fillRect(0,0,cardgameCanvas.canvas.width,cardgameCanvas.canvas.height);
+    this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
     this.setctxProperties({fillStyle: '#FFFFFF'});
     this.ctx.beginPath();
     this.ctx.arc(21, 21, 20, 0, 2 * Math.PI);
     this.ctx.fill();
     this.ctx.stroke();
     this.ctx.beginPath();
-    this.ctx.arc(cardgameCanvas.canvas.width-21, 21, 20, 0, 2 * Math.PI);
+    this.ctx.arc(this.canvas.width-21, 21, 20, 0, 2 * Math.PI);
     this.ctx.fill();
     this.ctx.stroke();
     this.ctx.beginPath();
-    this.ctx.arc(21, cardgameCanvas.canvas.height-21, 20, 0, 2 * Math.PI);
+    this.ctx.arc(21, this.canvas.height-21, 20, 0, 2 * Math.PI);
     this.ctx.fill();
     this.ctx.stroke();
     this.ctx.beginPath();
-    this.ctx.arc(cardgameCanvas.canvas.width-21, cardgameCanvas.canvas.height-21, 20, 0, 2 * Math.PI);
+    this.ctx.arc(this.canvas.width-21, this.canvas.height-21, 20, 0, 2 * Math.PI);
     this.ctx.fill();
     this.ctx.stroke();
     this.setctxProperties({font: "30px Arial"});
     this.ctx.fillText(`hi ${response.username} ${fullscreenCanvas.canvas.width} ${fullscreenCanvas.canvas.height} ${screen.width} ${screen.height} ${window.devicePixelRatio} ${window.visualViewport.scale}`,250,225);
-    
-
   }
 }

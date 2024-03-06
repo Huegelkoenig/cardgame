@@ -16,10 +16,10 @@ function initCanvas(response){
   fullscreenCanvas = new FullscreenCanvas('fullscreenCanvas');
   cardgameCanvas = new FARCanvas('cardgameCanvas');
   window.addEventListener('resize',()=>{setTimeout(()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); cardgameCanvas.resize();}, 500)});
-  setTimeout(()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); cardgameCanvas.resize(); cardgameCanvas.fill(response);},500);
   inputs = new Inputs();
 
     //TODO: 
+    setTimeout(()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); cardgameCanvas.resize(); cardgameCanvas.fill(response);},500);
     //lade grafiken etc
     //starte drawing loop  
 }

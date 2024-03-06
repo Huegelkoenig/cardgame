@@ -343,7 +343,7 @@ function resetPassword(req,res){
           //domain: DOMAIN,    //DEBUG: if domain or path are set, cookies won't work !?!?!?! due to localhost???
           //path: '/'
         });
-        res.status(400).send(JSON.stringify({view: 'resetView', msg: `You changed your password succesfully. Please <a href="/">log in</a> again!`}));
+        res.status(200).send(JSON.stringify({view: 'resetView', msg: `You changed your password succesfully. Please <a href="/">log in</a> again!`}));
       });
     });
   });
