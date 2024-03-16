@@ -117,3 +117,6 @@ dist
 # my own rules
 #test files, ignores all files of the format _[test]_*  , backslash \ is just necessary for git to escape the square brackets
 _\[test\]_*
+
+#images
+private/graphics/

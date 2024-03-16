@@ -225,7 +225,7 @@ function recoverCredentials(req,res){
         console.log('+1h: ' + (Date.now()+60*60*1000));
         pool.query(`UPDATE ${TABLE} SET ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [recoverID, (Date.now()+60*60*1000), recoverUsername], (err,sqlResult)=>{
           if (err){
-            reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 226/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${226/*LL*/}"`, error: err}));
+            reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 228/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${228/*LL*/}"`, error: err}));
             return;
           }
           //create email
@@ -243,7 +243,7 @@ function recoverCredentials(req,res){
           //send email
           transporter.sendMail(mailOptions, (err,info)=>{
             if (err){
-              reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 244/*LL*/, date:misc.DateToString(new Date()), msg: `transporter.sendMail threw an error`, usermsg: `Oups, something went wrong. Couldn't sent emails. Error-Code "DB-U:${244/*LL*/}"`, error: err}));
+              reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 246/*LL*/, date:misc.DateToString(new Date()), msg: `transporter.sendMail threw an error`, usermsg: `Oups, something went wrong. Couldn't sent emails. Error-Code "DB-U:${246/*LL*/}"`, error: err}));
               return;
             }
             resolve(true);
@@ -258,7 +258,7 @@ function recoverCredentials(req,res){
           return;
       })
       .catch((err)=>{
-        err.log(`logging at db-users.js at recoverCredentials(), line ${259/*LL*/}`);
+        err.log(`logging at db-users.js at recoverCredentials(), line ${261/*LL*/}`);
         res.status(500).send(JSON.stringify({view: 'recoverView', msg: err.usermsg}));
         return;
       });  
@@ -307,31 +307,31 @@ function resetPassword(req,res){
   //select all rows, where username matches resetID
   pool.query(`SELECT ${RECTOKENEXP} FROM ${TABLE} WHERE ${USERNAME} = ? AND ${RECOVERYTOKEN} = ?;`, [name, resetID], (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 308/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function resetPassword(), line ${309/*LL*/}`);
-      res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${310/*LL*/}"`}));
+      new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 310/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function resetPassword(), line ${311/*LL*/}`);
+      res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${312/*LL*/}"`}));
       return;
     }
     //if no match or time expired
     if (sqlResult.length!==1 || sqlResult[0][RECTOKENEXP]<Date.now()){
-      res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted. You entered the wrong username or the reset-link is expired. You can <a href="/">request another reset link</a>. Error-Code "DB-U:${315/*LL*/}"`}));
+      res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted. You entered the wrong username or the reset-link is expired. You can <a href="/">request another reset link</a>. Error-Code "DB-U:${317/*LL*/}"`}));
       return;
     }
     //resetID is still valid and matches username
     //generate a salt, afterwards hash the password with 10 rounds
     bcrypt.hash(password, 10, (err,hash)=>{
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 322/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function resetPassword(), line ${323/*LL*/}`);
-        res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, seems like you found a bug! ErrorCode ${324/*LL*/}`}));
+        new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 324/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function resetPassword(), line ${325/*LL*/}`);
+        res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, seems like you found a bug! ErrorCode ${326/*LL*/}`}));
         return;
       }
       //update password in database, delete recoveryID and link expiration
       pool.query(`UPDATE ${TABLE} SET ${PASSWORD} = ?, ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [hash, null, null, name], (err,sqlResult)=>{
         if (err){
-          new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 330/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function resetPassword(), line ${331/*LL*/}`);
-          res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${332/*LL*/}"`}));
+          new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 332/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function resetPassword(), line ${333/*LL*/}`);
+          res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${334/*LL*/}"`}));
           return;
         }
         //password updated, user must login again, reset AuthToken
@@ -394,9 +394,9 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 395/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${396/*LL*/}`);
-        res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, seems like you found a bug! ErrorCode ${397/*LL*/}`}));
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 397/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${398/*LL*/}`);
+        res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, seems like you found a bug! ErrorCode ${399/*LL*/}`}));
         return;
       }
       //successfully hashed, now insert into DB
@@ -406,9 +406,9 @@ function registerUser(req,res){
             res.status(403).send(JSON.stringify({view: 'registerView', msg: `Registration aborted. User '${name}' already exists. Please try another username.`}));
             return;
           }
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 407/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${408/*LL*/}`);
-          res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${409/*LL*/}`}));
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 409/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${410/*LL*/}`);
+          res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${411/*LL*/}`}));
           return;
         }
         res.status(200).send(JSON.stringify({view: 'loginView', msg: 'You registered succesfully.<br>Please log in!'}));
@@ -427,48 +427,50 @@ description:
 arguments:
   socket... a socket object created by socket.io
 return:
-  returns a promise, which resolves a Status object with status: 'ok' if the sessionId matches the stored sessionID, else rejects a Status object with the error corresponding message
+  returns the callback function (which should be next()): 'ok' if the sessionId matches the stored sessionID, else rejects a Status object with the error corresponding message
 */
-function validateSessionID(socket,callback){
+function validateSessionID(socket){
   if (!validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
-    const _err = new Error("not authorized");
-    _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 434/*LL*/, date:misc.DateToString(new Date()), msg: `username or sessionID not provided`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-    return callback(_err);
+    const _err = new Error("not authorized1");
+    _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 436/*LL*/, date:misc.DateToString(new Date()), msg: `username or sessionID not provided or has wrong format`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+    _err.data.log();
+    return _err;
   }
   pool.query(`SELECT ${SESSIONID} FROM ${TABLE} WHERE ${USERNAME} = ?;`, socket.handshake.query.username, (err, sqlResult)=>{
     if (err){
-      const _err = new Error("not authorized");
-      _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 440/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${440/*LL*/}"`, error: err})};
-      return callback(_err);
+      const _err = new Error("not authorized2");
+      _err.data = new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 443/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${443/*LL*/}"`, error: err});
+      return _err;
     }
     if (sqlResult.length === 0){ //no user with given username was found  (this may happens, if a user still has a valid authtoken, but is deleted from the DB - or if someone tries to attack the DB)
-      const _err = new Error("not authorized");
-      _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 445/*LL*/, date:misc.DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-      return callback(_err);
+      const _err = new Error("not authorized3");
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 448/*LL*/, date:misc.DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+      return _err;
     }
     if (sqlResult[0][SESSIONID].length == 0){
-      const _err = new Error("not authorized");
-      _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 450/*LL*/, date:misc.DateToString(new Date()), msg: `there's no sessionID stored to this username`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `unknown`})};
-      return callback(_err);
+      const _err = new Error("not authorized4");
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 453/*LL*/, date:misc.DateToString(new Date()), msg: `there's no sessionID stored to this username`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `unknown`});
+      return _err;
     }
-    if (socket.handshake.query.sessionID.length!==32 || socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){ //given sessionID doesn't match stored sessionID or has an invalid format  (this should only happen, if someone tries to attack the DB)
-      const _err = new Error("not authorized");
-      _err.data = {status: new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 455/*LL*/, date:misc.DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`})}; //don't change the usermsg, or an attacker could retrieve usernames
-      return callback(_err);
+    if (socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){ //given sessionID doesn't match stored sessionID
+      const _err = new Error("not authorized5");
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 458/*LL*/, date:misc.DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+
+      return _err;
     }
     //sessionID is ok, delete sessionID from DB, to prevent capturing, reuse, etc....  //TODO: don't delete sessionID. rethink this part!
     //pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, ['', socket.handshake.query.username], (err,sqlResult)=>{
     //  if (err){
     //    const _err = new Error("not authorized");
-    //    _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 462/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${462/*LL*/}"`, error: err})};
+    //    _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 466/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${466/*LL*/}"`, error: err})};
     //    return next(_err);
     //  }
     //  socket.username = socket.handshake.query.username;
     //  return callback(); //callback should usually be next(), which is called here, to avoid promises in the middleware
     //});
     console.log('  --> connection validated');
-    return callback(); //delete if uncomment pool.query(...) above  
+    return; //delete if uncomment pool.query(...) above  
   });
 }
 

@@ -15,8 +15,7 @@ const cookieParser = require('cookie-parser');
 const dbScripts = require('./my_modules/db-scripts/db-scripts.js');
 const Status = require('./my_modules/status/class_status.js');
 const cardgame = require('./my_modules/cardgame/cardgame.js');
-const misc = require('./my_modules/misc/misc.js')
-
+const misc = require('./my_modules/misc/misc.js');
 
 const jwt = require('jsonwebtoken');
 const myJWTsecret = process.env.JWTSECRET;
@@ -34,7 +33,7 @@ const httpApp = express();
 const httpServer = http.createServer(httpApp);
 httpApp.get('*', (req, res, next) => {
     console.log('HTTP GET');
-    res.status(200).sendFile(__dirname+'/public/http.html');
+    res.status(200).sendFile(__dirname+'/private/http.html');
 });
 /*--httpServer.on('error', (e) => {
   //if (e.code === 'EADDRINUSE') {
@@ -117,8 +116,17 @@ app.post('/reset/:ID', dbScripts.resetPassword);
 app.post('/register', dbScripts.registerUser);
 
 
+app.get('/image/:imageName', (req,res)=>{
+  res.status(200).sendFile(__dirname+'/private/graphics/'+req.params.imageName+'.png');
+});
+
+
 // any other request to any other path
-app.all('*',(req,res,next)=>{res.status(404).sendFile(__dirname+'/private/404.html');});
+app.all('*',(req,res,next)=>{
+  console.log('app.all ');
+  console.table(req.params)
+  res.status(404).sendFile(__dirname+'/private/404.html');
+});
 
 const HOST = '92.117.123.150';  //  server.listen(PORT, HOST, ()=>{...})
 const hostname = '0.0.0.0';
@@ -143,19 +151,17 @@ const io = socketio(server, {cookie: false});
 //verify user via sessionID BEFORE the 'connection' event
 io.use((socket,next)=>{ //this will be executed only once per connection, see https://socket.io/docs/v3/middlewares
   console.log(`${misc.DateToString(new Date())}: MyMiddleware: User '${socket.handshake.query.username}' tries to connect to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}' and socket.id '${socket.id}'`);
-  dbScripts.validateSessionID(socket,next);
-})
+  let possibleError = dbScripts.validateSessionID(socket);  //if possibleError is an Error-Object, next() will not be called. Instead, an "connect_error"-Event will be emitted to the client
+  next(possibleError);
+});
 
 io.on('connection', (socket) => {
+  console.log('io.on("connection")');
   socket.username = socket.handshake.query.username;
-  console.log(`the user ${socket.username} connected`);
+
+  cardgame.initGame(socket);
+
   socket.on('disconnect', (reason) => {
     console.log(`${misc.DateToString(new Date())}: User ${socket.username} disconnected due to `, reason);
   });
-  
-  //for testing
-  socket.on('press',(x,y)=>{console.log(`${socket.username} pressed at x: ` + x + '   y: '+ y)});
-  socket.on('release',(x,y)=>{console.log(`${socket.username} released at x: ` + x + '   y: '+ y)});
-
-  cardgame.init(socket);
 });

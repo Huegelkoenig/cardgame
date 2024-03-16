@@ -2,8 +2,7 @@ class Canvas{
   constructor(id){
     this.canvas = document.getElementById(id);
     /** @type {CanvasRenderingContext2D} **/
-    this.ctx = this.canvas.getContext('2d');
-    this.scale;
+    this.ctx = this.canvas.getContext('2d');    
   }
 
   //TODO: benötigt?
@@ -28,6 +27,10 @@ class Canvas{
     for (const [key, value] of Object.entries(styles)) {
       this.canvas.style[key] = value;
     }
+  }
+
+  hide(){
+    this.canvas.hidden = true;
   }
 
   clear(){
@@ -64,6 +67,7 @@ class FullscreenCanvas extends Canvas{
 class FARCanvas extends Canvas{
   constructor(id){
     super(id);
+    this.scale;
     this.rect = this.canvas.getBoundingClientRect();
   }
 
@@ -90,8 +94,8 @@ class FARCanvas extends Canvas{
     this.rect = this.canvas.getBoundingClientRect();
   }
 
-  //DELETE: just for testing
-  fill(response){
+  //DELETE: ALL BELOW! just for testing
+  fill(){
     this.setctxProperties({fillStyle:   '#AAAAAA',
                            strokeStyle: 'red',
                            lineWidth:   1
@@ -114,7 +118,13 @@ class FARCanvas extends Canvas{
     this.ctx.arc(this.canvas.width-21, this.canvas.height-21, 20, 0, 2 * Math.PI);
     this.ctx.fill();
     this.ctx.stroke();
+  }
+  filltext(username){
     this.setctxProperties({font: "30px Arial"});
-    this.ctx.fillText(`hi ${response.username} ${fullscreenCanvas.canvas.width} ${fullscreenCanvas.canvas.height} ${screen.width} ${screen.height} ${window.devicePixelRatio} ${window.visualViewport.scale}`,250,225);
+    this.ctx.fillText(`hi ${username} w:${fullscreenCanvas.canvas.width} h:${fullscreenCanvas.canvas.height} screen-w:${screen.width} screen-h:${screen.height} dpr:${window.devicePixelRatio} scale:${window.visualViewport.scale}`, 250, 225);
+  }
+  filltext(text, position){
+    this.setctxProperties({font: "30px Arial"});
+    this.ctx.fillText(text, position.x, position.y);
   }
 }

@@ -1,21 +1,22 @@
-var socket;
-function connectToSocketIO(response){
+async function connectToSocketIO(response){
   //loadTime = window.performance.timing.domContentLoadedEventEnd-window.performance.timing.navigationStart; 
-  //console.log('Page load time issss '+ loadTime);
+  //console.log('Page load time is '+ loadTime);
   socket = io('https://huegelkoenig.dynv6.net:8322/', {query: {username: response.username, sessionID: response.sessionID}, autoConnect: false});  //TODO: change host 
-  //socket.username = response.username;
-  socket.connect(); 
+  socket.connect();
 
-
+ 
   socket.on("connect_error", (err) => {   //This is fired when the server does not accept the connection in a middleware function
-    err.data.status.log()    // DEBUG: CHECK if this interferes with socket.on('error',...) below  (?)
-    document.getElementById('canvasMsg').hidden = true;
-    document.getElementById('canvasMsg').innerHTML = `There was an connection error. Code: client_IO: ` + 13/*LL*/;
-    console.log(`connect_error due to ${err.message}`);
+    fullscreenCanvas.hide();
+    cardgameCanvas.hide();
+    document.getElementById('canvasMsg').hidden = false;    
+    document.getElementById('canvasMsg').innerHTML = err.data.usermsg + `<br>There was an error while connecting to the IO-server .<br>Code: client_IO: ` + 16/*LL*/ + '<br><a href="/">Get me back to the login page</a>';
+    console.log("socket.on(connect_error) ist:");
+    console.log(err.data);
   });
 
 
   socket.on('error', (error) => {
+    console.log("socket.on(error)");
     if (error == 'userIDtimedout'){
       document.getElementById('canvasMsg').hidden = false;
       document.getElementById('canvasMsg').innerHTML = `Your login has timed out. Please log in again.<br><a href="/">Get me back to the starting page</a>`;
@@ -26,7 +27,7 @@ function connectToSocketIO(response){
     };
   });
 
-
+  //TODO:: überarbeiten
   socket.on('disconnect', (reason)=>{     //for reasons see: https://socket.io/docs/v3/client-socket-instance/
     document.getElementById('canvasMsg').hidden = false;
     document.getElementById('canvasMsg').innerHTML = `You've been disconnected. See console for details.`;
@@ -35,17 +36,20 @@ function connectToSocketIO(response){
   });
 
 
-   socket.on('connectionValidated',()=>{
-    document.getElementById('canvasMsg').hidden = false;
-    document.getElementById('canvasMsg').innerHTML = 'SOCKETIO connection validated. Initializing canvas.<br>If you can see this, theres somethin wrong.<br><a href="/">Please reload the page</a>';
-    initCanvas(response);
+  socket.on('connectionValidated',(listOfFilesToLoad)=>{
+    //TODO:
+    cardgameCanvas.filltext(`hi ${response.username}`, {x:400, y:100});
+    cardgameCanvas.filltext('loading graphics' + DateToString(new Date()), {x:400, y:200});
+    loadFiles(listOfFilesToLoad);
   });
 
   
   //sent by the server, just before the client gets disconnected by the server
   socket.on('disconnectionMessage',(msg)=>{
     document.getElementById('canvasMsg').innerHTML = `${socket.username} with id ${socket.id} has been disconnected, with the following message: <br>` + msg + '<br><a href="/">Get me back to the starting page</a>';    
+    document.getElementById('canvasMsg').hidden = false;
 
   })
-}
 
+  return 'sockets initialized' + DateToString(new Date());
+}
