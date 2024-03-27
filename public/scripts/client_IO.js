@@ -36,19 +36,20 @@ async function connectToSocketIO(response){
   });
 
 
+  //sent by the server, just before the client gets disconnected by the server
+  socket.on('disconnectionMessage',(msg)=>{
+    document.getElementById('canvasMsg').innerHTML = `${socket.username} with id ${socket.id} has been disconnected, with the following message: <br>` + msg + '<br><a href="/">Get me back to the starting page</a>';    
+    document.getElementById('canvasMsg').hidden = false;
+  })
+
   socket.on('connectionValidated',(listOfFilesToLoad)=>{
-    //TODO:
     cardgameCanvas.filltext(`hi ${response.username}`, {x:400, y:100});
     cardgameCanvas.filltext('loading graphics' + DateToString(new Date()), {x:400, y:200});
     loadFiles(listOfFilesToLoad);
   });
 
-  
-  //sent by the server, just before the client gets disconnected by the server
-  socket.on('disconnectionMessage',(msg)=>{
-    document.getElementById('canvasMsg').innerHTML = `${socket.username} with id ${socket.id} has been disconnected, with the following message: <br>` + msg + '<br><a href="/">Get me back to the starting page</a>';    
-    document.getElementById('canvasMsg').hidden = false;
-
+  socket.on('playerState', (playerState)=>{
+    alert('state is ' + playerState);
   })
 
   return 'sockets initialized' + DateToString(new Date());

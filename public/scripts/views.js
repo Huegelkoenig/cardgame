@@ -51,8 +51,8 @@ function showView(response) {
       document.getElementById('errorMsg').innerHTML = response.msg;
       document.getElementById('error_login').addEventListener('click', (evt)=>{evt.preventDefault(); response = {view: 'loginView', msg : ''}; showView(response);});
     default:
-      alert(`error in switch statement, views.js, line ${55/*LL*/}`);
-      console.log(`error in switch statement, line ${56/*LL*/}`);
+      alert(`error in switch statement, views.js, line ${54/*LL*/}`);
+      console.log(`error in switch statement, line ${55/*LL*/}`);
       console.log('viewID in switch statement is:', viewID);
     break;
   }
@@ -67,7 +67,6 @@ async function submitForm(evt){
     urlEncodedDataPairs.push(encodeURIComponent(nameValue[0]) + '=' + encodeURIComponent(nameValue[1]));
   }
   let urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
-  console.log(this.attributes.action.nodeValue + ' has type ' + typeof(this.attributes.action.nodeValue));
   let response = JSON.parse(await post(this.attributes.action.nodeValue, urlEncodedData));
   this.submit.disabled = false;
   showView(response);

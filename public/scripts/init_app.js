@@ -40,11 +40,12 @@ function loadFiles(listOfFilesToLoad){
       requestAnimationFrame(loadingLoop);
     }
     else{
-      alert('get Player state');
+      cardgameCanvas.drawImage(graphics.aatolex, new Point2D(0,0));
+      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: anpassen
     }
   }
   //TODO: loading both loadingbars first is pretty ugly
-  let gesamt = listOfFilesToLoad.imagesize;
+  let total = listOfFilesToLoad.imagesize;
   graphics.loadingbar = new Image();
   graphics.loadingbar.src = '/image/loadingbar';
   graphics.loadingbar.onload =()=>{
@@ -59,8 +60,7 @@ function loadFiles(listOfFilesToLoad){
                                                    graphics[file.name].src = '/image/'+file.name;  //sends GET request
                                                    graphics[file.name].onload = ()=>{filesStillLoading--;
                                                                                     loadingstatus += file.size;
-                                                                                    console.log(loadingstatus);
-                                                                                    cardgameCanvas.ctx.drawImage(graphics.loadingbar2, 0, 0, graphics.loadingbar.width*loadingstatus/gesamt, graphics.loadingbar.height, 100, 300, graphics.loadingbar.width*loadingstatus/gesamt, graphics.loadingbar.height);                                                                               
+                                                                                    cardgameCanvas.ctx.drawImage(graphics.loadingbar2, 0, 0, graphics.loadingbar.width*loadingstatus/total, graphics.loadingbar.height, 100, 300, graphics.loadingbar.width*loadingstatus/total, graphics.loadingbar.height);                                                                               
                                                                                     };
                                                 }
                                                 else if (file.type =='sound'){

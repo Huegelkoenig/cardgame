@@ -26,7 +26,7 @@ async function post(route, $_data=undefined){
         console.log('error: ', err);
         resolve(JSON.stringify({view:'errorView', msg:'An error occured.<br>Maybe your internet connection is unstable.'}));
       };
-      xhttp.timeout = 15000; // Set timeout to 5 seconds //TODO: 30s(?)
+      xhttp.timeout = 30000; // Set timeout to 30 seconds 
       xhttp.ontimeout = ()=>{
         console.log(`Error in globals.js, async function post, line ${31/*LL*/}!`);
         console.log('The xhttp request timed out');

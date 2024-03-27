@@ -9,8 +9,9 @@ const misc = require('../misc/misc.js');
 const Status = require('../status/class_status.js');
 
 let pool;
+const playerDBscripts = require('./db-players.js')(pool);
 
-const TABLE = 'Users'; //TODO: hardcode these values into the script or dotenv(?)
+const TABLE = 'users'; //TODO: hardcode these values into the script or dotenv(?)
 const USERNAME ='Username';
 const PASSWORD = 'Password';
 const EMAIL = 'Email';
@@ -22,7 +23,7 @@ const MAILPROVIDER = process.env.MAILPROVIDER;
 const MAILSENDERADRESS = process.env.MAILSENDERADRESS;
 const MAILSENDERPASSWORD = process.env.MAILSENDERPASSWORD;
 
-const DOMAIN = 'https://localhost:8322';  //TODO: change
+//const DOMAIN = 'https://localhost:8322';  //TODO: change
 
 const MIN_NAME_LENGTH = 1;
 const MAX_NAME_LENGTH = 30;
@@ -32,32 +33,6 @@ const MAX_EMAIL_LENGTH = 65;
 const ALLOWED_USER_CHARS = /[0-9a-z_.-]*/ig; //TODO: get rid of this, allow all user chars
 const HEX_CHARS = /[0-9a-f]*/g;
 
-
-
-/*
-function validateString(string, minLength, maxLength, $_regex)
-description:
-  determains if the given string is valid
-arguments:
-  string... the string to check
-  minLength.. the minimum length of the string
-  maxLength... the maximum length of the string
-  $_regex... (optional) a regular expression for allowed characters to check against, $_regex MUST have a global flag /.../g
-return:
-  true, if the string is valid, else false
-*/
-function validateString(string, minLength, maxLength, $_regex = undefined){
-  if (string && typeof string === 'string' && string.length>=minLength && string.length<=maxLength){
-    if (!$_regex){
-      return true;
-    }
-    let stringMatch = string.match($_regex);
-    if (stringMatch!==null && stringMatch[0]===string){
-      return true;
-    }
-  }
-  return false;
-}
 
 
 
@@ -94,16 +69,16 @@ return:
 */
 function validateCredentials(req, res){
   //check if username and password are existing and string
-  if (!validateString(req.body.loginusername,MIN_NAME_LENGTH,MAX_NAME_LENGTH, ALLOWED_USER_CHARS) || !validateString(req.body.loginpassword,MIN_PASS_LENGTH,MAX_PASS_LENGTH)){
-    res.status(401).send(JSON.stringify({view: 'loginView', msg: `The submitted data is invalid. Please enter your username and password again! Error Code "DB-U:${98/*LL*/}"`}));
+  if (!misc.validateString(req.body.loginusername,MIN_NAME_LENGTH,MAX_NAME_LENGTH, ALLOWED_USER_CHARS) || !misc.validateString(req.body.loginpassword,MIN_PASS_LENGTH,MAX_PASS_LENGTH)){
+    res.status(401).send(JSON.stringify({view: 'loginView', msg: `The submitted data is invalid. Please enter your username and password again! Error Code "DB-U:${74/*LL*/}"`}));
     return;
   }
   //get hashed password from database
   pool.query(`SELECT ${PASSWORD} FROM ${TABLE} WHERE ${USERNAME} = ?;`, req.body.loginusername, (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 104/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${105/*LL*/}`);
-      res.status(500).send(JSON.stringify({view: 'errorView', msg: `Maybe the server is down. Error-Code "DB-U:${106/*LL*/}"`}));
+      new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 80/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${81/*LL*/}`);
+      res.status(500).send(JSON.stringify({view: 'errorView', msg: `Maybe the server is down. Error-Code "DB-U:${82/*LL*/}"`}));
       return;
     }
     //if sqlResult.length === 0, no user with given username was found.
@@ -115,9 +90,9 @@ function validateCredentials(req, res){
     //compare given password with stored hashpassword
     bcrypt.compare(req.body.loginpassword, sqlResult[0][PASSWORD], (err,match)=>{
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 118/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function validateCredentials(), line ${119/*LL*/}`);
-        res.status(500).send(JSON.stringify({view: 'errorView', msg: `There's a bug in my code. Error-Code: "DB-U:${120/*LL*/}"`}));
+        new Status({status:'error', file:'db-users.js', func: 'validateCredentials()', line: 94/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function validateCredentials(), line ${95/*LL*/}`);
+        res.status(500).send(JSON.stringify({view: 'errorView', msg: `There's a bug in my code. Error-Code: "DB-U:${96/*LL*/}"`}));
         return;
       }
       //no error, but given and stored passwords aren't identical
@@ -150,11 +125,11 @@ function loginResponse(req, res, $_oldToken=undefined){
   //create sessionID (128bit) and store it into DB
   //TODO: disconnect sockets with old sessionID belonging to the username
   let sessionID = crypto.randomBytes(16).toString('hex');
-  pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, [sessionID, username], (err,sqlResult)=>{
+  pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, [sessionID, username], (err)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 155/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function loginResponse(), line ${156/*LL*/}`);
-      res.status(500).send(JSON.stringify({view: 'errorView', msg: `Maybe the server is down. Error-Code "DB-U:${157/*LL*/}"`}));
+      new Status({status:'error', file:'db-users.js', func: 'loginResponse()', line: 131/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function loginResponse(), line ${132/*LL*/}`);
+      res.status(500).send(JSON.stringify({view: 'errorView', msg: `Maybe the server is down. Error-Code "DB-U:${133/*LL*/}"`}));
       return;
     }
     //set a new httpOnly cookie with the cardgameAuthToken
@@ -188,7 +163,7 @@ return:
 */
 function recoverCredentials(req,res){
   if (!validateEmail(req.body.recoveryMail,1,65)){
-    res.status(200).send(JSON.stringify({view: 'recoverView', msg: `The submitted email is invalid. Please enter your email adress! Error Code "DB-U:${191/*LL*/}"`}));
+    res.status(200).send(JSON.stringify({view: 'recoverView', msg: `The submitted email is invalid. Please enter your email adress! Error Code "DB-U:${167/*LL*/}"`}));
     return;
   }  
   //create a transporter (email provider)
@@ -208,9 +183,9 @@ function recoverCredentials(req,res){
   //select all users with the given email
   pool.query(`SELECT ${USERNAME} FROM ${TABLE} WHERE ${EMAIL} = ?;`, req.body.recoveryMail, (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 211/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function recoverCredentials(), line ${212/*LL*/}`);
-      res.status(200).send(JSON.stringify({view: 'recoverView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${213/*LL*/}"`}));
+      new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 187/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function recoverCredentials(), line ${188/*LL*/}`);
+      res.status(200).send(JSON.stringify({view: 'recoverView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${189/*LL*/}"`}));
       return;
     }    
     //for every username with given email adress...
@@ -223,9 +198,9 @@ function recoverCredentials(req,res){
       promises.push(new Promise((resolve,reject)=>{
         //store recoverytoken in database
         console.log('+1h: ' + (Date.now()+60*60*1000));
-        pool.query(`UPDATE ${TABLE} SET ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [recoverID, (Date.now()+60*60*1000), recoverUsername], (err,sqlResult)=>{
+        pool.query(`UPDATE ${TABLE} SET ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [recoverID, (Date.now()+60*60*1000), recoverUsername], (err)=>{
           if (err){
-            reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 228/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${228/*LL*/}"`, error: err}));
+            reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 204/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${204/*LL*/}"`, error: err}));
             return;
           }
           //create email
@@ -243,7 +218,7 @@ function recoverCredentials(req,res){
           //send email
           transporter.sendMail(mailOptions, (err,info)=>{
             if (err){
-              reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 246/*LL*/, date:misc.DateToString(new Date()), msg: `transporter.sendMail threw an error`, usermsg: `Oups, something went wrong. Couldn't sent emails. Error-Code "DB-U:${246/*LL*/}"`, error: err}));
+              reject(new Status({status:'error', file:'db-users.js', func: 'recoverCredentials()', line: 222/*LL*/, date:misc.DateToString(new Date()), msg: `transporter.sendMail threw an error`, usermsg: `Oups, something went wrong. Couldn't sent emails. Error-Code "DB-U:${222/*LL*/}"`, error: err}));
               return;
             }
             resolve(true);
@@ -258,7 +233,7 @@ function recoverCredentials(req,res){
           return;
       })
       .catch((err)=>{
-        err.log(`logging at db-users.js at recoverCredentials(), line ${261/*LL*/}`);
+        err.log(`logging at db-users.js at recoverCredentials(), line ${237/*LL*/}`);
         res.status(500).send(JSON.stringify({view: 'recoverView', msg: err.usermsg}));
         return;
       });  
@@ -287,11 +262,11 @@ function resetPassword(req,res){
     res.status(500).send(JSON.stringify({view: 'resetView', msg: 'Please enter username and password and also confirm the password.'}));
     return;
   }
-  if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
+  if (!misc.validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
     res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`}));
     return;
   }
-  if (!validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
+  if (!misc.validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
     res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`}));
     return;
   }
@@ -299,7 +274,7 @@ function resetPassword(req,res){
     res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted! The confirmation doesn't match the password. Please re-enter your password and confirm it.`}));
     return;
   }
-  if (!validateString(resetID,32,32,HEX_CHARS)){
+  if (!misc.validateString(resetID,32,32,HEX_CHARS)){
     res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset denied! Please click the link in your email again.`}));
     return;
   }
@@ -307,31 +282,31 @@ function resetPassword(req,res){
   //select all rows, where username matches resetID
   pool.query(`SELECT ${RECTOKENEXP} FROM ${TABLE} WHERE ${USERNAME} = ? AND ${RECOVERYTOKEN} = ?;`, [name, resetID], (err, sqlResult)=>{
     if (err){
-      new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 310/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function resetPassword(), line ${311/*LL*/}`);
-      res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${312/*LL*/}"`}));
+      new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 286/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function resetPassword(), line ${287/*LL*/}`);
+      res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${288/*LL*/}"`}));
       return;
     }
     //if no match or time expired
     if (sqlResult.length!==1 || sqlResult[0][RECTOKENEXP]<Date.now()){
-      res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted. You entered the wrong username or the reset-link is expired. You can <a href="/">request another reset link</a>. Error-Code "DB-U:${317/*LL*/}"`}));
+      res.status(401).send(JSON.stringify({view: 'resetView', msg: `Reset aborted. You entered the wrong username or the reset-link is expired. You can <a href="/">request another reset link</a>. Error-Code "DB-U:${293/*LL*/}"`}));
       return;
     }
     //resetID is still valid and matches username
     //generate a salt, afterwards hash the password with 10 rounds
     bcrypt.hash(password, 10, (err,hash)=>{
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 324/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function resetPassword(), line ${325/*LL*/}`);
-        res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, seems like you found a bug! ErrorCode ${326/*LL*/}`}));
+        new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 300/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function resetPassword(), line ${301/*LL*/}`);
+        res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, seems like you found a bug! ErrorCode ${302/*LL*/}`}));
         return;
       }
       //update password in database, delete recoveryID and link expiration
       pool.query(`UPDATE ${TABLE} SET ${PASSWORD} = ?, ${RECOVERYTOKEN} = ?, ${RECTOKENEXP} = ? WHERE ${USERNAME} = ?;`, [hash, null, null, name], (err,sqlResult)=>{
         if (err){
-          new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 332/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
-                .log(`logging at db-users.js, function resetPassword(), line ${333/*LL*/}`);
-          res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${334/*LL*/}"`}));
+          new Status({status:'error', file:'db-users.js', func: 'resetPassword()', line: 308/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, error: err})
+                .log(`logging at db-users.js, function resetPassword(), line ${309/*LL*/}`);
+          res.status(500).send(JSON.stringify({view: 'resetView', msg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${310/*LL*/}"`}));
           return;
         }
         //password updated, user must login again, reset AuthToken
@@ -373,11 +348,11 @@ function registerUser(req,res){
     res.status(401).send(JSON.stringify({view: 'registerView', msg: 'Please enter username and password and also confirm the password. Email is optional.'}));
     return;
   }
-  else if (!validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
+  else if (!misc.validateString(name, MIN_NAME_LENGTH, MAX_NAME_LENGTH, ALLOWED_USER_CHARS)){
     res.status(403).send(JSON.stringify({view: 'registerView', msg: `Registration aborted! The username ${name} is invalid.<br>The username must have between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.<br>Allowed characters are a-z, A-Z, 0-9, as well as . (DOT), - (MINUS) and _ (UNDERSCORE)`}));
     return;
   }
-  else if (!validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
+  else if (!misc.validateString(password, MIN_PASS_LENGTH, MAX_PASS_LENGTH)){
     res.status(403).send(JSON.stringify({view: 'registerView', msg: `Registration aborted! The password is invalid.<br>The password must have between ${MIN_PASS_LENGTH} and ${MAX_PASS_LENGTH} characters.`}));
     return;
   }
@@ -394,26 +369,37 @@ function registerUser(req,res){
   // 2) try to register the user
     bcrypt.hash(password, 10, (err,hash)=>{//generate a salt, afterwards hash the password with 10 rounds
       if (err){
-        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 397/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
-                  .log(`logging at db-users.js, function registerUser(), line ${398/*LL*/}`);
-        res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, seems like you found a bug! ErrorCode ${399/*LL*/}`}));
+        new Status({status:'error', file:'db-users.js', func: 'registerUser()', line: 373/*LL*/, date:misc.DateToString(new Date()), msg: `bcrypt.hash() threw an error`, error: err})
+                  .log(`logging at db-users.js, function registerUser(), line ${374/*LL*/}`);
+        res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, seems like you found a bug! ErrorCode ${375/*LL*/}`}));
         return;
       }
       //successfully hashed, now insert into DB
-      pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email], (err,sqlResult)=>{
+      pool.query(`INSERT INTO ${TABLE} (${USERNAME}, ${PASSWORD}, ${EMAIL}) VALUES (?, ?, ?);`, [name, hash, email], (err)=>{
         if (err){
           if (err.errno == 1062){ //Tried to insert a duplicate entry bc username is already taken
             res.status(403).send(JSON.stringify({view: 'registerView', msg: `Registration aborted. User '${name}' already exists. Please try another username.`}));
             return;
           }
-          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) try to register the user', line: 409/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
-                    .log(`logging at db-users.js, function registerUser(), line ${410/*LL*/}`);
-          res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${411/*LL*/}`}));
+          new Status({status:'error', file:'db-users.js', func: 'registerUser()', part: '2) trying to register the user', line: 385/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query threw an error, see .error for details`, error: err})
+                    .log(`logging at db-users.js, function registerUser(), line ${386/*LL*/}`);
+          res.status(500).send(JSON.stringify({view: 'errorView', msg: `Oups, something went wrong! Maybe the database server is down!? ErrorCode ${387/*LL*/}`}));
           return;
         }
-        res.status(200).send(JSON.stringify({view: 'loginView', msg: 'You registered succesfully.<br>Please log in!'}));
-        return;
-      });
+        //if a new user registers, create a new entry in player-DB with 0 games and 0 wins
+        playerDBscripts.createPlayer(name)
+          .then(()=>{
+            res.status(200).send(JSON.stringify({view: 'loginView', msg: `Hello ${name}! You registered succesfully.<br>Please log in to play!`}));
+            return;
+          })
+          .catch((err)=>{
+            //DEBUG: if the entry of a new Player fails, remove the insertion in the user-table above
+            console.log(`error while creating the Player. db-users.js, line ${398/*LL*/}`);
+            console.log(err);
+            res.status(500).send(JSON.stringify({view: 'errorView', msg: `Registration aborted due to database error.<br> Please mail to TODO:*@*.* or you will not be able to choose your desired username`}));
+            return;
+          });
+        });
     });
   }
 }
@@ -430,32 +416,32 @@ return:
   returns the callback function (which should be next()): 'ok' if the sessionId matches the stored sessionID, else rejects a Status object with the error corresponding message
 */
 function validateSessionID(socket){
-  if (!validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
+  if (!misc.validateString(socket.handshake.query.username,MIN_NAME_LENGTH,MAX_NAME_LENGTH,ALLOWED_USER_CHARS) || !misc.validateString(socket.handshake.query.sessionID,32,32,HEX_CHARS)){
     //provided username or sessionID have an invalid format (this should only happen, if someone tries to attack the DB)
     const _err = new Error("not authorized1");
-    _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 436/*LL*/, date:misc.DateToString(new Date()), msg: `username or sessionID not provided or has wrong format`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+    _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 424/*LL*/, date:misc.DateToString(new Date()), msg: `username or sessionID not provided or has wrong format`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
     _err.data.log();
     return _err;
   }
   pool.query(`SELECT ${SESSIONID} FROM ${TABLE} WHERE ${USERNAME} = ?;`, socket.handshake.query.username, (err, sqlResult)=>{
     if (err){
       const _err = new Error("not authorized2");
-      _err.data = new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 443/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${443/*LL*/}"`, error: err});
+      _err.data = new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 431/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${431/*LL*/}"`, error: err});
       return _err;
     }
     if (sqlResult.length === 0){ //no user with given username was found  (this may happens, if a user still has a valid authtoken, but is deleted from the DB - or if someone tries to attack the DB)
       const _err = new Error("not authorized3");
-      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 448/*LL*/, date:misc.DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 436/*LL*/, date:misc.DateToString(new Date()), msg: `username doesn't exist in DB`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
       return _err;
     }
     if (sqlResult[0][SESSIONID].length == 0){
       const _err = new Error("not authorized4");
-      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 453/*LL*/, date:misc.DateToString(new Date()), msg: `there's no sessionID stored to this username`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `unknown`});
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 441/*LL*/, date:misc.DateToString(new Date()), msg: `there's no sessionID stored to this username`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `unknown`});
       return _err;
     }
     if (socket.handshake.query.sessionID !== sqlResult[0][SESSIONID]){ //given sessionID doesn't match stored sessionID
       const _err = new Error("not authorized5");
-      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 458/*LL*/, date:misc.DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
+      _err.data = new Status({status:'rejected', warning:'possible attack on DB', file:'db-users.js', func: 'validateSessionID()', line: 446/*LL*/, date:misc.DateToString(new Date()), msg: `provided sessionID doesn't match stored sessionID "${sqlResult[0][SESSIONID]}"`, username: socket.handshake.query.username, sessionID: socket.handshake.query.sessionID, usermsg: `The given username and/or password is invalid. Please try again!`}); //don't change the usermsg, or an attacker could retrieve usernames
 
       return _err;
     }
@@ -463,7 +449,7 @@ function validateSessionID(socket){
     //pool.query(`UPDATE ${TABLE} SET ${SESSIONID} = ? WHERE ${USERNAME} = ?;`, ['', socket.handshake.query.username], (err,sqlResult)=>{
     //  if (err){
     //    const _err = new Error("not authorized");
-    //    _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 466/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${466/*LL*/}"`, error: err})};
+    //    _err.data = {status: new Status({status:'error', file:'db-users.js', func: 'validateSessionID()', line: 454/*LL*/, date:misc.DateToString(new Date()), msg: `pool.query() threw an error`, usermsg: `Oups, something went wrong. Maybe the server is down. Error-Code "DB-U:${454/*LL*/}"`, error: err})};
     //    return next(_err);
     //  }
     //  socket.username = socket.handshake.query.username;

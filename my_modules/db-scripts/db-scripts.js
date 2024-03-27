@@ -10,6 +10,7 @@ const pool = mysql.createPool({
   });
 
 const userDBscripts = require('./db-users.js')(pool);
+const playerDBscripts = require('./db-players.js')(pool);
 
 /*
 function getAllFrom(table){
@@ -34,6 +35,7 @@ module.exports = {
   recoverCredentials: userDBscripts.recoverCredentials,
   resetPassword: userDBscripts.resetPassword,
   registerUser: userDBscripts.registerUser,
-  validateSessionID: userDBscripts.validateSessionID
-  
+  validateSessionID: userDBscripts.validateSessionID,
+
+  getPlayerState: playerDBscripts.getPlayerState
 }

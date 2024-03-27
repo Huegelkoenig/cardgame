@@ -37,7 +37,7 @@ class Canvas{
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
 
-  drawImage(img, position, scale){
+  drawImage(img, position, scale=1){
     this.ctx.drawImage(img, position.x, position.y, scale*img.width, scale*img.height);//TODO:
   }
 }

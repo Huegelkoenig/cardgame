@@ -45,7 +45,11 @@ httpApp.get('*', (req, res, next) => {
  // }
 }); --*/
 httpServer.listen({port:HTTPPORT}, (err) => {
-  if(err){console.log(err);}
+  if(err){
+    console.log(err);
+    console.log(`error while trying to listen on http-port ${HTTPPORT}`);
+    return;
+  }
   console.log(`http listening on port ${HTTPPORT}`);
  });
 /*------ end of http server ---------------------------------*/
@@ -128,10 +132,11 @@ app.all('*',(req,res,next)=>{
   res.status(404).sendFile(__dirname+'/private/404.html');
 });
 
-const HOST = '92.117.123.150';  //  server.listen(PORT, HOST, ()=>{...})
-const hostname = '0.0.0.0';
-const hostall = '*';
-const acthost = HOST;
+//const localhost = 'localhost';  //  server.listen(PORT, HOST, ()=>{...}) 
+//const hostname = '0.0.0.0';
+//const hostall = '*';
+//const acthost = HOST;
+const HOST = process.env.HOST; 
 server.listen(HTTPSPORT, () => {
   console.log(`https listening on port ${HTTPSPORT}` ); //on host ${acthost}`);
  });
@@ -151,7 +156,7 @@ const io = socketio(server, {cookie: false});
 //verify user via sessionID BEFORE the 'connection' event
 io.use((socket,next)=>{ //this will be executed only once per connection, see https://socket.io/docs/v3/middlewares
   console.log(`${misc.DateToString(new Date())}: MyMiddleware: User '${socket.handshake.query.username}' tries to connect to SOCKET.IO with sessionID '${socket.handshake.query.sessionID}' and socket.id '${socket.id}'`);
-  let possibleError = dbScripts.validateSessionID(socket);  //if possibleError is an Error-Object, next() will not be called. Instead, an "connect_error"-Event will be emitted to the client
+  let possibleError = dbScripts.validateSessionID(socket);  //if possibleError is an Error-Object, next() will NOT be called. Instead, an "connect_error"-Event will be emitted to the client
   next(possibleError);
 });
 
