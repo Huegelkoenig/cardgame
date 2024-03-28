@@ -1,3 +1,4 @@
+//WARNING: DON'T ADD THIS FILE TO app.html <script src=...>
 window.onload = ()=>{
   let response = {view: 'resetView',
                   msg : ''};

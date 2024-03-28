@@ -44,7 +44,11 @@ function initGame(socket){
       return;
     }
     socket.emit('playerState', playerState);
-  })
+  });
+
+  socket.on('test', ()=>{
+    socket.emit('teest');
+  });
 
 
   //for testing

@@ -49,8 +49,13 @@ async function connectToSocketIO(response){
   });
 
   socket.on('playerState', (playerState)=>{
-    alert('state is ' + playerState);
-  })
+    if (playerState>0){
+      socket.emit('getGameState');
+      return;      
+    }
+    scene = 'mainMenu';
+  });
 
-  return 'sockets initialized' + DateToString(new Date());
+  console.log('sockets initialized at ' + DateToString(new Date()));
+  return ;
 }

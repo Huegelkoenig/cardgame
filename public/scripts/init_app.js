@@ -19,15 +19,7 @@ async function initialize(response){
   window.addEventListener('resize', ()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); cardgameCanvas.resize();});
   cardgameCanvas.filltext('connecting to socket-IO',{x:50, y:50});
   
-  let clgresp = await connectToSocketIO(response);
-  console.log(clgresp);
-   //TODO: 
-  //lade grafiken etc
-  //loadingscreen
-  
-  //starte drawing loop  
-  
-  
+  await connectToSocketIO(response);//TODO: just   connectToSocketIO(response);  
 }
 
 
@@ -40,8 +32,10 @@ function loadFiles(listOfFilesToLoad){
       requestAnimationFrame(loadingLoop);
     }
     else{
-      cardgameCanvas.drawImage(graphics.aatolex, new Point2D(0,0));
-      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: anpassen
+      defineScenes();
+      scene = 'intro';
+      gameLoop();
+      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen
     }
   }
   //TODO: loading both loadingbars first is pretty ugly
@@ -53,7 +47,7 @@ function loadFiles(listOfFilesToLoad){
     graphics.loadingbar2 = new Image();
     graphics.loadingbar2.src = '/image/loadingbar2';
     graphics.loadingbar2.onload =()=>{
-      let loadingstatus = 0;//since loadingbar and loadingbar2 have been loaded already   //TODO:: it really feels like pretty bad code
+      let loadingstatus = 0;//since loadingbar and loadingbar2 have been loaded already   //TODO:: it gets the job done, but really feels like pretty bad code
       listOfFilesToLoad.list.forEach( (file) => {filesStillLoading++;
                                                 if (file.type == 'image'){  //TODO: switch!?
                                                    graphics[file.name] = new Image();
@@ -70,4 +64,11 @@ function loadFiles(listOfFilesToLoad){
       loadingLoop();
   };
 }
+}
+
+
+
+function defineScenes(){
+  scenes['intro'] = [[{o: graphics['aatolex'], p: {x:0, y:0}, clickable: false, dragable: false}]];
+  scenes['mainMenu'] = [[{o: graphics['a (1)'], p: {x:50, y:50}}], [{o: graphics['clubs'], p: {x:300, y:300}}, {o: graphics['hearts'], p: {x:300, y:600}, scale: 0.5}]];
 }

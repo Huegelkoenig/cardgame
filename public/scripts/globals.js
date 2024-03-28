@@ -7,6 +7,9 @@ var socket;
 var inputs;
 var graphics = {};
 
+var scenes = {};
+var scene;
+
 
 
 //makes a POST request to the given route with the optionally given $_data
@@ -84,3 +87,5 @@ function DateToString(date){
   time += dummy>99?dummy:(dummy>9?('0'+dummy):('00'+dummy));
   return time;
 }
+
+
