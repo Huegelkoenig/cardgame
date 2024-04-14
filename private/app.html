@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum.scale=1, user-scalable=no"/>
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>cardgame</title>
   <link rel="stylesheet" type="text/css" href="styles/style.css">
@@ -85,6 +85,7 @@
   <div class="views" id="canvasView" hidden>
     <p id="canvasMsg">initializing gaming screen - if you can see this for a long period, something is wrong.<br><a href="/">Get me back to the starting page</a></p>
     <canvas id="fullscreenCanvas" width=1 height=1></canvas>
+    <canvas id="backgroundCanvas" width=2000 height=900></canvas>
     <canvas id="cardgameCanvas" width=2000 height=900></canvas>
   </div>
   <!-- CANVAS VIEW END -->
@@ -103,7 +104,6 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/scripts/app.js"></script>
   <script src="/scripts/class_animation.js"></script>
-  <script src="/scripts/class_asset.js"></script>
   <script src="/scripts/class_canvas.js"></script>
   <script src="/scripts/class_coords.js"></script>  
   <script src="/scripts/class_inputs.js"></script>
@@ -115,6 +115,7 @@
   <script src="/scripts/client_IO.js"></script>
   <script src="/scripts/globals.js"></script>
   <script src="/scripts/init_app.js"></script>
+  <script src="/scripts/loadAssets.js"></script>
   <script src="/scripts/mainMenu.js"></script>
   <script src="/scripts/views.js"></script>  
   

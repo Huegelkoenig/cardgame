@@ -21,13 +21,26 @@ html, body {
   z-index: 2;
 }
 
-#cardgameCanvas {
+#backgroundCanvas {
   position: absolute;
   border: none;
   z-index: 3;
 }
 
+#cardgameCanvas {
+  position: absolute;
+  border: none;
+  z-index: 4;
+}
+
 #error{
   background-color:rgb(241, 163, 163);
   color:rgb(0, 0, 0);
+}
+
+@-o-viewport {
+  zoom: 1;
+  max-zoom: 1;
+  min-zoom: 1;
+	user-zoom: fixed;
 }
