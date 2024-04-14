@@ -122,19 +122,19 @@ return:
 function newSprite(img, origin){
   //NOTE: img could be any object with attributes .nodeName='IMG' and .complete=true. There's no way to check, if img is really an image.
   if (!img){
-    throw Error(`class_sprite.js: function newSprite: image is undefined`);
+    throw Error(`class_sprite.js: function newSprite: line ${125/*LL*/}: image is undefined`);
   }
   if (!('nodeName' in img)){
-    throw Error(`class_sprite.js: function newSprite: ${img} is not an image (error 1/2)`);
+    throw Error(`class_sprite.js: function newSprite: line ${128/*LL*/}: ${img} is not an image (error 1/2)`);
   }
   if (!(img.nodeName==='IMG')){
-      throw Error(`class_sprite.js: function newSprite: ${img} is not an image (error 2/2)`);
+      throw Error(`class_sprite.js: function newSprite: line ${131/*LL*/}: ${img} is not an image (error 2/2)`);
   }
   if (!img.complete){
-    throw Error(`class_sprite.js: function newSprite: ${img} isn't fully preloaded (or not even an image)`)
+    throw Error(`class_sprite.js: function newSprite: line ${134/*LL*/}: ${img} isn't fully preloaded (or not even an image)`)
   }
   if (!Number.isInteger(origin.x) || !Number.isInteger(origin.y) || !Number.isInteger(origin.width) || !Number.isInteger(origin.height) || !(origin.x>=0) || !(origin.x<img.width)|| !(origin.x+origin.width<=img.width) || !(origin.y>=0)  || !(origin.y<img.height) || !(origin.y+origin.height<=img.height)){
-      throw Error(`class_sprite.js: function newSprite: Sprite dimensions exceed source image dimension`);
+      throw Error(`class_sprite.js: function newSprite: line ${137/*LL*/}: Sprite dimensions exceed source image dimension`);
   }
   return new Sprite(img, origin);
 }

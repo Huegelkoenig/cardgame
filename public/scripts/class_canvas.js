@@ -55,8 +55,10 @@ class FullscreenCanvas extends Canvas{
                        });
   }
 
-  fill(color){
-    this.setctxProperties({fillStyle: color});
+  fill($_color=false){
+    if ($_color){
+      this.setctxProperties({fillStyle: $_color});  
+    }
     this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
   }
 }
@@ -95,7 +97,13 @@ class FARCanvas extends Canvas{
   }
 
   //DELETE: ALL BELOW! just for testing
-  fill(){
+  fill($_color=false){
+    if($_color){
+      this.setctxProperties({fillStyle: $_color,
+                          });
+      this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+      return;
+    }
     this.setctxProperties({fillStyle:   '#AAAAAA',
                            strokeStyle: 'red',
                            lineWidth:   1

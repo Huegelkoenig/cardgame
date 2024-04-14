@@ -5,70 +5,56 @@ window.onload = async ()=>{
 }
 
 
-async function initialize(response){
+function initialize(response){
   fullscreenCanvas = new FullscreenCanvas('fullscreenCanvas');
+  backgroundCanvas = new FARCanvas('backgroundCanvas');
   cardgameCanvas = new FARCanvas('cardgameCanvas');
 
   document.getElementById('canvasMsg').hidden = true;    
   fullscreenCanvas.resize();
   fullscreenCanvas.fill('lightblue');
+  backgroundCanvas.resize();
+  backgroundCanvas.fill('pink');
   cardgameCanvas.resize();
   cardgameCanvas.fill();
   inputs = new Inputs();
 
-  window.addEventListener('resize', ()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); cardgameCanvas.resize();});
+  window.addEventListener('resize', ()=>{fullscreenCanvas.resize(); fullscreenCanvas.fill('lightblue'); backgroundCanvas.resize(); cardgameCanvas.resize();});
   cardgameCanvas.filltext('connecting to socket-IO',{x:50, y:50});
   
-  await connectToSocketIO(response);//TODO: just   connectToSocketIO(response);  
+  connectToSocketIO(response); //if connection is established, function loadFiles will be called
 }
 
 
 
 
 function loadFiles(listOfFilesToLoad){
-  let filesStillLoading = 0;
-  function loadingLoop(){   //TODO: rethink this part - maybe create promises resolve them .onload(...)
-    if (filesStillLoading>0){
-      requestAnimationFrame(loadingLoop);
+  cardgameCanvas.filltext('loading graphics', {x:400, y:200});
+  Promise.all(loadAssets(graphics, 'img', [{name: 'loadingbar'}, {name: 'loadingbar2'}]))
+  .then(()=>{
+    let loadingstatus = 0;
+    function drawLoadingBar(loadedSize){
+      loadingstatus += loadedSize;
+      cardgameCanvas.ctx.drawImage(graphics.loadingbar2, 0, 0, graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, graphics.loadingbar.height, 100, 300, graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, graphics.loadingbar.height);
     }
-    else{
+    cardgameCanvas.drawImage(graphics.loadingbar, new Point2D(100,300), 1);
+   Promise.all([...loadAssets(graphics, 'img', listOfFilesToLoad.images, drawLoadingBar), ...loadAssets(sounds, 'audio', listOfFilesToLoad.sounds, drawLoadingBar)])
+    .then(()=>{ //all loaded
+      defineElements()
       defineScenes();
       scene = 'intro';
       gameLoop();
-      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen
-    }
-  }
-  //TODO: loading both loadingbars first is pretty ugly
-  let total = listOfFilesToLoad.imagesize;
-  graphics.loadingbar = new Image();
-  graphics.loadingbar.src = '/image/loadingbar';
-  graphics.loadingbar.onload =()=>{
-    cardgameCanvas.drawImage(graphics.loadingbar, new Point2D(100,300), 1);
-    graphics.loadingbar2 = new Image();
-    graphics.loadingbar2.src = '/image/loadingbar2';
-    graphics.loadingbar2.onload =()=>{
-      let loadingstatus = 0;//since loadingbar and loadingbar2 have been loaded already   //TODO:: it gets the job done, but really feels like pretty bad code
-      listOfFilesToLoad.list.forEach( (file) => {filesStillLoading++;
-                                                if (file.type == 'image'){  //TODO: switch!?
-                                                   graphics[file.name] = new Image();
-                                                   graphics[file.name].src = '/image/'+file.name;  //sends GET request
-                                                   graphics[file.name].onload = ()=>{filesStillLoading--;
-                                                                                    loadingstatus += file.size;
-                                                                                    cardgameCanvas.ctx.drawImage(graphics.loadingbar2, 0, 0, graphics.loadingbar.width*loadingstatus/total, graphics.loadingbar.height, 100, 300, graphics.loadingbar.width*loadingstatus/total, graphics.loadingbar.height);                                                                               
-                                                                                    };
-                                                }
-                                                else if (file.type =='sound'){
-                                                  //TODO:  .oncanplaythrough
-                                                }
-                                        });
-      loadingLoop();
-  };
-}
+      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen in der das Intro gezeigt wird
+    });
+  });
 }
 
 
+function defineElements(){
+  //TODO:  maybe: class Element(){...}
+}
 
-function defineScenes(){
-  scenes['intro'] = [[{o: graphics['aatolex'], p: {x:0, y:0}, clickable: false, dragable: false}]];
+function defineScenes(){  //TODO: o: object(ELEMENT!!!)  each object(ELEMENT) has its own draw method. See class_sprite.js : a whole image as sprite
+  scenes['intro'] = [[{o: graphics['aatolex'], p: {x:0, y:0}, clickable: false, dragable: false, hoverable: false}]];
   scenes['mainMenu'] = [[{o: graphics['a (1)'], p: {x:50, y:50}}], [{o: graphics['clubs'], p: {x:300, y:300}}, {o: graphics['hearts'], p: {x:300, y:600}, scale: 0.5}]];
 }

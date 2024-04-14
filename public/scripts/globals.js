@@ -5,7 +5,9 @@ var scale;
 var socket;
 
 var inputs;
+
 var graphics = {};
+var sounds = {};
 
 var scenes = {};
 var scene;

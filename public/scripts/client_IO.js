@@ -44,7 +44,6 @@ async function connectToSocketIO(response){
 
   socket.on('connectionValidated',(listOfFilesToLoad)=>{
     cardgameCanvas.filltext(`hi ${response.username}`, {x:400, y:100});
-    cardgameCanvas.filltext('loading graphics' + DateToString(new Date()), {x:400, y:200});
     loadFiles(listOfFilesToLoad);
   });
 
