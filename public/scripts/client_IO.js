@@ -42,17 +42,25 @@ async function connectToSocketIO(response){
     document.getElementById('canvasMsg').hidden = false;
   })
 
+
   socket.on('connectionValidated',(listOfFilesToLoad)=>{
     cardgameCanvas.filltext(`hi ${response.username}`, {x:400, y:100});
     loadFiles(listOfFilesToLoad);
   });
 
-  socket.on('playerState', (playerState)=>{
+
+  socket.on('setPlayerState', (playerState)=>{
     if (playerState>0){
       socket.emit('getGameState');
-      return;      
+      return;
     }
-    scene = 'mainMenu';
+    Scene.switchTo('mainMenu');
+  });
+
+
+  socket.on('setGameState', (gameState)=>{
+    //TODO: gameState
+    //Scene.switchTo('ingame');
   });
 
   console.log('sockets initialized at ' + DateToString(new Date()));

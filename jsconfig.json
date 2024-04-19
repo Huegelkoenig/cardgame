@@ -7,7 +7,7 @@
 			"es6"
 		]
   },
-  "include": [],
+  "include": ["test.js"],
 	"exclude": [
 		"node_modules"
 	]

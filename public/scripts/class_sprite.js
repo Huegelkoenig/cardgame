@@ -32,19 +32,36 @@ mySprite.draw(ctx,{x:407, y:210, width: 40, height:40});
 
 notes:
 can be used to draw a whole image:
-e.g. a preloaded image has size 200x150 and is stored as img_collection('my_image')  (see class_asset.js how to preload images and use img_collection)
+e.g. a preloaded image has size 200x150 and is stored as img_collection('my_image')  (see loadAssets.js how to preload images)
 let img = newSprite( img_collection('my_image'), newCoords(0,0,200,150) );
 img.draw(ctx, target_coords);
 */
 
 class Sprite{
-  constructor(img, origin){
+  constructor(img, origin=undefined){
     this.img = img;
-    this.origin = origin;
+    if (origin == undefined){
+      origin = {};
+      origin.x = 0;
+      origin.y = 0;
+      origin.width = this.img.width;
+      origin.height = this.img.height;
+    }
+    this.origin = origin;    
   }
 
-  draw(ctx,target){
-    ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x, target.y, target.width?target.width:this.origin.width, target.height?target.height:this.origin.height);
+  update(){}
+
+  draw(ctx, target){
+    if (target.hasOwnProperty('scale')){
+      target.width = this.origin.width*target.scale;
+      target.height = this.origin.height*target.scale;
+    }
+    if (!target.hasOwnProperty('width')){
+      target.width = this.origin.width;
+      target.height = this.origin.height;
+    }
+    ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x, target.y, target.width, target.height);
   }
 
   render(ctx,target){
@@ -122,19 +139,19 @@ return:
 function newSprite(img, origin){
   //NOTE: img could be any object with attributes .nodeName='IMG' and .complete=true. There's no way to check, if img is really an image.
   if (!img){
-    throw Error(`class_sprite.js: function newSprite: line ${125/*LL*/}: image is undefined`);
+    throw Error(`class_sprite.js: function newSprite: line ${127/*LL*/}: image is undefined`);
   }
   if (!('nodeName' in img)){
-    throw Error(`class_sprite.js: function newSprite: line ${128/*LL*/}: ${img} is not an image (error 1/2)`);
+    throw Error(`class_sprite.js: function newSprite: line ${130/*LL*/}: ${img} is not an image (error 1/2)`);
   }
   if (!(img.nodeName==='IMG')){
-      throw Error(`class_sprite.js: function newSprite: line ${131/*LL*/}: ${img} is not an image (error 2/2)`);
+      throw Error(`class_sprite.js: function newSprite: line ${133/*LL*/}: ${img} is not an image (error 2/2)`);
   }
   if (!img.complete){
-    throw Error(`class_sprite.js: function newSprite: line ${134/*LL*/}: ${img} isn't fully preloaded (or not even an image)`)
+    throw Error(`class_sprite.js: function newSprite: line ${136/*LL*/}: ${img} isn't fully preloaded (or not even an image)`)
   }
   if (!Number.isInteger(origin.x) || !Number.isInteger(origin.y) || !Number.isInteger(origin.width) || !Number.isInteger(origin.height) || !(origin.x>=0) || !(origin.x<img.width)|| !(origin.x+origin.width<=img.width) || !(origin.y>=0)  || !(origin.y<img.height) || !(origin.y+origin.height<=img.height)){
-      throw Error(`class_sprite.js: function newSprite: line ${137/*LL*/}: Sprite dimensions exceed source image dimension`);
+      throw Error(`class_sprite.js: function newSprite: line ${139/*LL*/}: Sprite dimensions exceed source image dimension`);
   }
   return new Sprite(img, origin);
 }

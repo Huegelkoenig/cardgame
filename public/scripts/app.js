@@ -1,8 +1,9 @@
 function gameLoop(){
   cardgameCanvas.clear();
-  for(z=0; z<scenes[scene].length; ++z){
-    scenes[scene][z].forEach(obj => {
-      cardgameCanvas.drawImage(obj.o, obj.p, obj.scale);
+  for(z=0; z<scene.layers.length; ++z){
+    scene.layers[z].forEach(obj => {
+      //console.log(obj);
+      obj.o.draw(cardgameCanvas.ctx, obj.target);
     });
   }
   requestAnimationFrame(gameLoop);

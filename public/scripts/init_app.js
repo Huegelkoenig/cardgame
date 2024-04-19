@@ -42,7 +42,7 @@ function loadFiles(listOfFilesToLoad){
     .then(()=>{ //all loaded
       defineElements()
       defineScenes();
-      scene = 'intro';
+      Scene.switchTo('intro');
       gameLoop();
       setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen in der das Intro gezeigt wird
     });
@@ -51,10 +51,17 @@ function loadFiles(listOfFilesToLoad){
 
 
 function defineElements(){
+  elements['clubs'] = new Sprite(graphics['clubs']);
+  elements['spades'] = new Sprite(graphics['spades']);
+  elements['hearts'] = new Sprite(graphics['hearts']);
   //TODO:  maybe: class Element(){...}
 }
 
 function defineScenes(){  //TODO: o: object(ELEMENT!!!)  each object(ELEMENT) has its own draw method. See class_sprite.js : a whole image as sprite
-  scenes['intro'] = [[{o: graphics['aatolex'], p: {x:0, y:0}, clickable: false, dragable: false, hoverable: false}]];
-  scenes['mainMenu'] = [[{o: graphics['a (1)'], p: {x:50, y:50}}], [{o: graphics['clubs'], p: {x:300, y:300}}, {o: graphics['hearts'], p: {x:300, y:600}, scale: 0.5}]];
+  scenes['intro'] = new Scene();
+  scenes['intro'].setBackground(graphics['aatolex']);
+
+  scenes['mainMenu'] = new Scene();
+  scenes['mainMenu'].setBackground(graphics['menu_background']);
+  scenes['mainMenu'].layers = [[{name: 'clubs', o: elements['clubs'], target: {x:50, y:50}}, {name: 'spades', o: elements['spades'], target: {x:300, y:450, width: 1600, height: 100}}, {name:'hearts', o: elements['hearts'], target: {x:300, y:600, scale: 0.4}}]];
 }

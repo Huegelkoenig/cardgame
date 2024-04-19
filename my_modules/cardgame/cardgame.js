@@ -3,17 +3,18 @@
 const dbScripts = require("../db-scripts/db-scripts");
 
 function initGame(socket){
-  const listOfFilesToLoad = {images: [{size:  99, name: 'hearts'              }, //array of graphics and sounds + user-dependant graphics and sounds //TODO: insert real values
-                                      {size: 100, name: '1'                   },
+  const listOfFilesToLoad = {images: [{size:  99, name: 'hearts'              }, //array of graphics and sounds + user-dependant graphics and sounds //TODO: insert real values                                      
                                       {size: 116, name: 'hearts_highlighted'  },
-                                      {size: 100, name: 'spades'              },
-                                      {size: 100, name: '2'                   },
+                                      {size: 100, name: 'spades'              },                                      
                                       {size: 116, name: 'spades_highlighted'  },
                                       {size: 102, name: 'clubs'               },
-                                      {size: 119, name: 'clubs_highlighted'   },
-                                      {size: 100, name: '3'                   },
+                                      {size: 119, name: 'clubs_highlighted'   },                                      
                                       {size: 101, name: 'diamonds'            },
-                                      {size: 100, name: 'a (1)'               },//DELETE: large files just for testing
+                                      {size: 118, name: 'diamonds_highlighted'},
+                                  /*  {size: 100, name: '1'                   }, //DELETE: large files just for testing
+                                      {size: 100, name: '2'                   },
+                                      {size: 100, name: '3'                   },
+                                      {size: 100, name: 'a (1)'               },
                                       {size: 100, name: 'a (2)'               },
                                       {size: 100, name: 'a (3)'               },
                                       {size: 100, name: 'a (4)'               },
@@ -24,10 +25,11 @@ function initGame(socket){
                                       {size: 100, name: 'a (9)'               },
                                       {size: 100, name: 'a (10)'              },
                                       {size: 100, name: 'a (11)'              },
-                                      {size: 100, name: 'a (12)'              },
-                                      {size: 118, name: 'diamonds_highlighted'},
-                                      {size:  22, name: 'aatolex'             }],
-                              sounds: []}; //TODO: also append sounds and maybe user specific images or sounds
+                                      {size: 100, name: 'a (12)'              },*/
+                                      {size:  22, name: 'aatolex'             },
+                                      {size:  18, name: 'menu_background'     }
+                                     ],
+                             sounds: []}; //TODO: also append sounds and maybe user specific images or sounds
   let totalSize = 0;
   Object.values(listOfFilesToLoad).forEach((list)=>{list.forEach((el)=>{totalSize+=el.size})});
   listOfFilesToLoad.totalSize = totalSize;
@@ -43,8 +45,13 @@ function initGame(socket){
       status.log();
       return;
     }
-    socket.emit('playerState', playerState);
+    socket.emit('setPlayerState', playerState);
   });
+
+  socket.on('getGameState', ()=>{
+    //TODO:
+    socket.emit('setGameState', {}); 
+  })
 
   //DELETE:
   socket.on('test', ()=>{

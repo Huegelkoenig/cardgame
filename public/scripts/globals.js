@@ -9,8 +9,10 @@ var inputs;
 var graphics = {};
 var sounds = {};
 
+var elements = {};
+
 var scenes = {};
-var scene;
+var scene = [];
 
 
 
