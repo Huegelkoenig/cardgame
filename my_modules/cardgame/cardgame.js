@@ -11,7 +11,7 @@ function initGame(socket){
                                       {size: 119, name: 'clubs_highlighted'   },                                      
                                       {size: 101, name: 'diamonds'            },
                                       {size: 118, name: 'diamonds_highlighted'},
-                                  /*  {size: 100, name: '1'                   }, //DELETE: large files just for testing
+                                    {size: 100, name: '1'                   }, //DELETE: large files just for testing
                                       {size: 100, name: '2'                   },
                                       {size: 100, name: '3'                   },
                                       {size: 100, name: 'a (1)'               },
@@ -25,7 +25,7 @@ function initGame(socket){
                                       {size: 100, name: 'a (9)'               },
                                       {size: 100, name: 'a (10)'              },
                                       {size: 100, name: 'a (11)'              },
-                                      {size: 100, name: 'a (12)'              },*/
+                                      {size: 100, name: 'a (12)'              },
                                       {size:  22, name: 'aatolex'             },
                                       {size:  18, name: 'menu_background'     }
                                      ],

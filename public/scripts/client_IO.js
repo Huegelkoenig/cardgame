@@ -44,7 +44,9 @@ async function connectToSocketIO(response){
 
 
   socket.on('connectionValidated',(listOfFilesToLoad)=>{
-    cardgameCanvas.filltext(`hi ${response.username}`, {x:400, y:100});
+    scenes['loading'] = new Scene();
+    console.log(scenes['loading']);
+    scenes['loading'].layers.push([{name:'greetings', o: new TextElement(`hi ${response.username}`), target: {x:400, y:100}}]);
     loadFiles(listOfFilesToLoad);
   });
 
