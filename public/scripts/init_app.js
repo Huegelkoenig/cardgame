@@ -29,44 +29,41 @@ function initialize(response){
 
 
 function loadFiles(listOfFilesToLoad){
-  cardgameCanvas.filltext('loading graphics', {x:400, y:200});
+  scenes.loading.addToLayer(0, 'loadingmessage', {asset: new TextElement('loading graphics'),
+                                             target: {x:400, y:200}});
   Promise.all(loadAssets(graphics, 'img', [{name: 'loadingbar'}, {name: 'loadingbar2'}]))
   .then(()=>{
-    scene = scenes['loading']
-    Scene.switchTo('loading');
-    gameLoop();
     let loadingstatus = 0;
-    scenes['loading'].layers[0].push({name:'loadingbar', o: new Sprite(graphics['loadingbar']), target: {x:100, y:300}});
-    scenes['loading'].layers.push([{name:'loadingbar2', o: new Sprite(graphics['loadingbar2']), target: {x:100, y:300, width: graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height: graphics.loadingbar.height}}]);
-    console.log(scene);
+    scenes.loading.addToLayer(0, 'loadingbar', {asset: new Sprite(graphics['loadingbar']),
+                                                   target: {x:100, y:300}});
+    scenes.loading.addToLayer(1, 'loadingbar2',{asset: new Sprite(graphics['loadingbar2'], {x:0, y:0, width:0, height: graphics.loadingbar2.height}),
+                                                   target: {x:100, y:300, width: graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height: graphics.loadingbar.height}});
     function drawLoadingBar(loadedSize){
       loadingstatus += loadedSize;
-      scenes['loading'].layers[1][0].o.origin = {x:0, y:0, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height};   //TODO: redo
-      scenes['loading'].layers[1][0].target = {x:100, y:300, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height}; //TODO: redo
-    }    
-   Promise.all([...loadAssets(graphics, 'img', listOfFilesToLoad.images, drawLoadingBar), ...loadAssets(sounds, 'audio', listOfFilesToLoad.sounds, drawLoadingBar)])
-    .then(()=>{ //all loaded
-      defineElements()
-      defineScenes();
-      Scene.switchTo('intro');
-      setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen in der das Intro gezeigt wird
-    });
+      scene.layers[1].loadingbar2.asset.origin = {x:0, y:0, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height};
+      scene.layers[1].loadingbar2.target = {x:100, y:300, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height};
+    }
+    Promise.all([...loadAssets(graphics, 'img', listOfFilesToLoad.images, drawLoadingBar), ...loadAssets(sounds, 'audio', listOfFilesToLoad.sounds, drawLoadingBar)])
+      .then(()=>{ //all loaded
+        defineScenes();
+        Scene.switchTo('intro');
+        setTimeout(()=>{socket.emit('getPlayerState')}, 1000);  //TODO: Zeit anpassen in der das Intro gezeigt wird
+      });
   });
 }
 
 
-function defineElements(){
-  elements['clubs'] = new Sprite(graphics['clubs']);
-  elements['spades'] = new Sprite(graphics['spades']);
-  elements['hearts'] = new Sprite(graphics['hearts']);
-  //TODO:  maybe: class Element(){...}
-}
 
-function defineScenes(){  //TODO: o: object(ELEMENT!!!)  each object(ELEMENT) has its own draw method. See class_sprite.js : a whole image as sprite
+function defineScenes(){  //TODO: each class for assets has its own .draw method  (like in class_textElement.js or class_Ssprite.js)
   scenes['intro'] = new Scene();
-  scenes['intro'].setBackground(graphics['aatolex']);  //has exactly 2000x900pixels
+  scenes.intro.setBackground(graphics['aatolex']);  //has exactly 2000x900pixels
 
   scenes['mainMenu'] = new Scene();
-  scenes['mainMenu'].setBackground(graphics['menu_background']);
-  scenes['mainMenu'].layers = [[{name: 'clubs', o: elements['clubs'], target: {x:50, y:50}}, {name: 'spades', o: elements['spades'], target: {x:300, y:500, width: 1600, height: 50}}, {name:'hearts', o: elements['hearts'], target: {x:300, y:600, scale: 0.4}}]];
+  scenes.mainMenu.setBackground(graphics['menu_background']);
+  scenes.mainMenu.addToLayer(0, 'clubs',  {asset: new Sprite(graphics.clubs),
+                                           target: {x:50, y:50}});
+  scenes.mainMenu.addToLayer(0, 'spades', {asset: new Sprite(graphics.spades),
+                                           target: {x:300, y:500, width: 1600, height: 50}});
+  scenes.mainMenu.addToLayer(0, 'hearts', {asset: new Sprite(graphics.hearts),
+                                           target: {x:300, y:600, scale: 0.4}});
 }
