@@ -45,9 +45,9 @@ async function connectToSocketIO(response){
 
   socket.on('connectionValidated',(listOfFilesToLoad)=>{
     scenes['loading'] = new Scene();
-    scenes.loading.addToLayer(0, 'greetings', {asset: new TextElement(`Hi ${response.username}`), target: {x:400, y:100}});
+    scenes.loading.addToLayer(0, 'greetings', new Item(new TextElement(`Hi ${response.username}`),{x:400, y:100}));
     Scene.switchTo('loading');
-    gameLoop();
+    gameLoop(0);
     loadFiles(listOfFilesToLoad);
   });
 

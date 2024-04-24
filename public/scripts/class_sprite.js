@@ -30,6 +30,7 @@ my_whole_img.draw(ctx, target_coords);
 
 class Sprite{
   constructor(img, $_origin=undefined){
+    this.type = 'sprite';
     this.img = img;
     if ($_origin == undefined){
       $_origin = {};
@@ -41,21 +42,9 @@ class Sprite{
     this.origin = $_origin;    
   }
 
-  setOrigin(origin){
-    this.origin = origin;
-  }
-
   update(){}
 
   draw(ctx, target){
-    if (target.hasOwnProperty('scale')){
-      target.width = this.origin.width*target.scale;
-      target.height = this.origin.height*target.scale;
-    }
-    if (!target.hasOwnProperty('width') || !target.hasOwnProperty('height')){
-      target.width = this.origin.width;
-      target.height = this.origin.height;
-    }
     ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x, target.y, target.width, target.height);
   }
 

@@ -5,17 +5,18 @@
 //...
 //Scene.switchTo('name');
 
-//this.layers =[layer_0, layer_1, ... ]  with this.layers[i] = {name_i_1: element_i_1,  name_i_2: element_i_2, ...};  layers[0] is at bottom
-//element_i_j = {asset: someAsset, target: {x: int, y: int, width: int, height: int}}, where someAsset = new Sprite, new Squircle, new TextElement, new Animation, etc
+//this.layers =[layer_0, layer_1, ... ]  with this.layers[i] = {name_i_1: item_i_1,  name_i_2: item_i_2, ...};  layers[0] is at bottom
+//item_i_j = {asset: someAsset, target: {x: int, y: int, width: int, height: int}}, where someAsset = new Sprite, new Squircle, new Textitem, new Animation, etc
 
-//this.elementsToLayer = {name_i_j: i, name_k_m: k, ...}  
+//this.itemsToLayer = {name_i_j: i, name_k_m: k, ...}  
 
 
 class Scene{
   constructor(){
     this.background = undefined;
-    this.layers = [{}];  
-    this.elementInLayer = {}; 
+    this.layers = [{}];
+    this.layerOfItem = {};
+    this.items = {};   //this.items.myName is short for this.layers[layerOfItem.myName].mayName    //DEBUG: makes layerOfItem obsolete!?!
   }
 
   static switchTo(nextScene){
@@ -31,24 +32,25 @@ class Scene{
     this.background = img;
   }
 
-  addToLayer(i, name, element){
+  addToLayer(i, name, item){
     while (i > this.layers.length-1){
       this.layers.push({});
     }
-    this.layers[i][name] = element;
-    this.elementInLayer[name] = i;
-    //TODO: if not given, set width and height of element.target automatically  (eg via switch element.type  and then e.g. ctx.measureText(element.asset.text).width  or element.asset.img.width etc
+    this.layers[i][name] = item;
+    this.layerOfItem[name] = i;
+    this.items[name] = this.layers[i][name];
   }
 
-  pushOnTop(name, element){
+  pushOnTop(name, item){
     let i = this.layers.length;
     this.layers.push({});
-    this.layers[i][name] = element;
-    this.elementInLayer[name] = i;
+    this.layers[i][name] = item;
+    this.layerOfItem[name] = i;
+    this.items[name] = this.layers[i][name];
   }
 
   getLayerOf(name){
-    return this.elementInLayer[name]
+    return this.layerOfItem[name]
   }
 
   setAttributes(name, attributes){   //do i need this?
@@ -59,14 +61,15 @@ class Scene{
     
   }
 
-  removeElement(name){
+  removeItem(name){
     let layer = this.getLayerOf(name);
     delete this.layers[layer][name];
     while (layer>-1 && layer==(this.layers.length-1) && Object.keys(this.layers[layer]).length == 0){
       this.layers.pop();
       layer--;
     }
-    delete this.elementInLayer[name];
+    delete this.layerOfItem[name];
+    delete this.items[name];
   }
 
 }

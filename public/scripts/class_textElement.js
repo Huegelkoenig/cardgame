@@ -27,14 +27,21 @@ img.draw(ctx, target_coords);
 */
 
 class TextElement{
-  constructor(text){
+  constructor(text, $_style={}){
+    this.type = 'text';
     this.text = text;
+    this.style = $_style;
   }
 
   update(){}
 
   draw(ctx, target){
+    ctx.save();
+    for (const [key, value] of Object.entries(this.style)){
+      ctx[key] = value;
+    }
     ctx.fillText(this.text, target.x, target.y);
+    ctx.restore();
   }
 
 }
