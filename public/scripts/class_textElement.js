@@ -35,12 +35,12 @@ class TextElement{
 
   update(){}
 
-  draw(ctx, target){
+  draw(ctx, target, offset){
     ctx.save();
     for (const [key, value] of Object.entries(this.style)){
       ctx[key] = value;
     }
-    ctx.fillText(this.text, target.x, target.y);
+    ctx.fillText(this.text, target.x+offset.x, target.y+offset.y);
     ctx.restore();
   }
 

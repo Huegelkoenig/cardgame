@@ -44,8 +44,8 @@ class Sprite{
 
   update(){}
 
-  draw(ctx, target){
-    ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x, target.y, target.width, target.height);
+  draw(ctx, target, offset){
+    ctx.drawImage(this.img, this.origin.x, this.origin.y, this.origin.width, this.origin.height, target.x+offset.x, target.y+offset.y, target.width, target.height);
   }
 
 }

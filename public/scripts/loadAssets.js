@@ -65,7 +65,7 @@ function loadAssets(container, type, files, $_callback=()=>{}){
             }
           });
         break;    
-        default: console.log('zusätzlich: ' + type); return;//throw Error('Error: class_assets.js: function loadAsset(): type must be "image" or "img", "audio" or "video"'); 
+        default: console.log('zusätzlich: ' + type); return;//throw Error('Error: class_assets.js: function loadAsset(): type must be "image" or "img", "audio" or "video"');  //TODO: 
       }
       asset.src = folder + file.name;
       promises.push(promise);

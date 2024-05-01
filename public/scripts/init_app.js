@@ -61,11 +61,16 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
   scenes['mainMenu'] = new Scene();
   scenes.mainMenu.setBackground(graphics['menu_background']);
   scenes.mainMenu.addToLayer(0, 'clubs',  new Item(new Sprite(graphics.clubs),
-                                                   {x:50, y:50}));
+                                                   {x:50, y:50},
+                                                   ['clickable'],
+                                                    ()=>{console.log('clubs wurden gedrückt')}));
   scenes.mainMenu.addToLayer(0, 'spades', new Item(new Sprite(graphics.spades),
                                                    {x:300, y:500, width: 1600, height: 50}));
   scenes.mainMenu.addToLayer(1, 'hearts', new Item(new Sprite(graphics.hearts),
-                                                   {x:300, y:600, scale: 0.4}));
+                                                   {x:300, y:600, scale: 0.4},
+                                                   ['dragable'],
+                                                    ()=>{},
+                                                    ()=>{scene.items.hearts.setOffset(new Point2D(0,0))}));
   scenes.mainMenu.addToLayer(0, 'someText', new Item(new TextElement('blaBlubb 09', {font: "100px Helvetica", fillStyle: 'black'}),
                                                      {x:300, y:800}));
 }

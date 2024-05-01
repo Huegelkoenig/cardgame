@@ -1,18 +1,26 @@
 class Item{
-  constructor(asset, target, $_centered = false){
+  constructor(asset, target, $_initialProperties=[], $_click = ()=>{}, $_drag = ()=>{}){
     this.asset = asset;
     this.target = target;
-    this.centered = $_centered;
-    this.box = {tl: new Point2D(undefined, undefined), br: new Point2D(undefined, undefined)}
+    this.properties = {centered: false,
+                       clickable: false,
+                       bubbleclick: false,
+                       dragable:  false,
+                       bubbledrag: false};
+    this.box = {tl: new Point2D(undefined, undefined), br: new Point2D(undefined, undefined)};
     this.setBox();
+    $_initialProperties.forEach( (p)=>{this.properties[p] = true;} );
+    this.offset = new Point2D();
+    this.onClick = $_click;
+    this.afterDrag = $_drag;
   }
 
   setBox(){
-    if (this.centered){//TODO: 
+    if (this.properties['centered']){//TODO: 
 
     }
     else {
-      switch (this.asset.type){
+      switch (this.asset.type){ //TODO: add animation, squircle, etc
         case 'sprite':
           this.box.tl.x = this.target.x;
           this.box.tl.y = this.target.y;
@@ -47,5 +55,19 @@ class Item{
     this.setBox();
   }
 
+  setOffset(offset){
+    this.offset.x = offset.x;
+    this.offset.y = offset.y;
+  }
+
+  setProperties(props){
+    for (const [property, value] of Object.entries(props)){
+      this.properties[property] = value;
+    }
+  }
+
+  draw(ctx){
+    this.asset.draw(ctx, this.target, this.offset);
+  }
 
 }

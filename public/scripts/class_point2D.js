@@ -3,4 +3,15 @@ class Point2D{
     this.x = x;
     this.y = y;
   }
+
+  set(x,y){
+    this.x = x;
+    this.y = y;
+  }
+
+  static dist(a,b){
+    return Math.sqrt((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y));
+  }
+
+  
 }
