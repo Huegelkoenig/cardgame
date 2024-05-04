@@ -3,15 +3,18 @@
 const dbScripts = require("../db-scripts/db-scripts");
 
 function initGame(socket){
-  const listOfFilesToLoad = {images: [{size:  99, name: 'hearts'              }, //array of graphics and sounds + user-dependant graphics and sounds //TODO: insert real values                                      
-                                      {size: 116, name: 'hearts_highlighted'  },
-                                      {size: 100, name: 'spades'              },                                      
-                                      {size: 116, name: 'spades_highlighted'  },
-                                      {size: 102, name: 'clubs'               },
-                                      {size: 119, name: 'clubs_highlighted'   },                                      
-                                      {size: 101, name: 'diamonds'            },
-                                      {size: 118, name: 'diamonds_highlighted'},
-                                    {size: 100, name: '1'                   }, //DELETE: large files just for testing
+  const listOfFilesToLoad = {images: [{size: 113, name: 'clubs'               }, //array of graphics and sounds + user-dependant graphics and sounds //TODO: insert real values                                      
+                                      {size: 114, name: 'diamonds'            },                                      
+                                      {size: 110, name: 'hearts'              },                                  
+                                      {size: 111, name: 'spades'              },
+                                      {size:  18, name: 'menu_background'     },
+                                      {size:   8, name: 'frame_black'         },
+                                      {size:   8, name: 'frame_blue'          },
+                                      {size:   8, name: 'frame_orange'        },
+                                      {size:   8, name: 'frame_red'           },
+                                      {size:   55, name: 'loadingbar'         },
+                                      {size:   48, name: 'loadingbar_grey'    },
+                                      {size: 100, name: '1'                   }, //DELETE: large files just for testing
                                       {size: 100, name: '2'                   },
                                       {size: 100, name: '3'                   },
                                       {size: 100, name: 'a (1)'               },
@@ -26,8 +29,7 @@ function initGame(socket){
                                       {size: 100, name: 'a (10)'              },
                                       {size: 100, name: 'a (11)'              },
                                       {size: 100, name: 'a (12)'              },
-                                      {size:  22, name: 'aatolex'             },
-                                      {size:  18, name: 'menu_background'     }
+                                      {size:  22, name: 'aatolex'             }                                     
                                      ],
                              sounds: []}; //TODO: also append sounds and maybe user specific images or sounds
   let totalSize = 0;

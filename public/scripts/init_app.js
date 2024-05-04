@@ -29,19 +29,20 @@ function initialize(response){
 
 
 function loadFiles(listOfFilesToLoad){
+  let PositionOfLoadingbar = new Point2D(450, 300);
   scenes.loading.addToLayer(0, 'loadingmessage', new Item(new TextElement('loading graphics'),  //scenes.loading gets defined in client_IO.js
                                                           {x:400, y:200}));
-  Promise.all(loadAssets(graphics, 'img', [{name: 'loadingbar'}, {name: 'loadingbar2'}]))
+  Promise.all(loadAssets(graphics, 'img', [{name: 'loadingbar'}, {name: 'loadingbar_grey'}]))
   .then(()=>{
     let loadingstatus = 0;
-    scenes.loading.addToLayer(0, 'loadingbar', new Item(new Sprite(graphics['loadingbar']),
-                                                        {x:100, y:300}));
-    scenes.loading.addToLayer(1, 'loadingbar2',new Item(new Sprite(graphics['loadingbar2'], {x:0, y:0, width:0, height: graphics.loadingbar2.height}),
-                                                        {x:100, y:300, width: graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height: graphics.loadingbar.height}));
+    scenes.loading.addToLayer(0, 'loadingbar_grey', new Item(new Sprite(graphics['loadingbar_grey']),
+                                                        {x: PositionOfLoadingbar.x, y: PositionOfLoadingbar.y}));
+    scenes.loading.addToLayer(1, 'loadingbar',new Item(new Sprite(graphics['loadingbar'], {x:0, y:0, width:0, height: graphics.loadingbar.height}),
+                                                        {x: PositionOfLoadingbar.x, y: PositionOfLoadingbar.y, width: graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height: graphics.loadingbar.height}));
     function adjustLoadingBar(loadedSize){
       loadingstatus += loadedSize;
-      scenes.loading.layers[1].loadingbar2.asset.origin = {x:0, y:0, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height}; //layers[1] is hardcoded here
-      scenes.loading.layers[1].loadingbar2.setTarget({x:100, y:300, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height});
+      scenes.loading.layers[1].loadingbar.asset.origin = {x:0, y:0, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height}; //layers[1] is hardcoded here
+      scenes.loading.layers[1].loadingbar.setTarget({x: PositionOfLoadingbar.x, y: PositionOfLoadingbar.y, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height});
     }
     Promise.all([...loadAssets(graphics, 'img', listOfFilesToLoad.images, adjustLoadingBar), ...loadAssets(sounds, 'audio', listOfFilesToLoad.sounds, adjustLoadingBar)])
       .then(()=>{ //everythin is loaded
