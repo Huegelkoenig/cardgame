@@ -12,9 +12,10 @@ function initGame(socket){
                                       {size:   8, name: 'frame_blue'          },
                                       {size:   8, name: 'frame_orange'        },
                                       {size:   8, name: 'frame_red'           },
+                                      {size:  22, name: 'aatolex'             },
                                       {size:   55, name: 'loadingbar'         },
-                                      {size:   48, name: 'loadingbar_grey'    },
-                                      {size: 100, name: '1'                   }, //DELETE: large files just for testing
+                                      {size:   48, name: 'loadingbar_grey'    }
+                                      /*{size: 100, name: '1'                   }, //DELETE: large files just for testing
                                       {size: 100, name: '2'                   },
                                       {size: 100, name: '3'                   },
                                       {size: 100, name: 'a (1)'               },
@@ -28,8 +29,7 @@ function initGame(socket){
                                       {size: 100, name: 'a (9)'               },
                                       {size: 100, name: 'a (10)'              },
                                       {size: 100, name: 'a (11)'              },
-                                      {size: 100, name: 'a (12)'              },
-                                      {size:  22, name: 'aatolex'             }                                     
+                                      {size: 100, name: 'a (12)'              }, */                           
                                      ],
                              sounds: []}; //TODO: also append sounds and maybe user specific images or sounds
   let totalSize = 0;

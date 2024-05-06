@@ -11,7 +11,7 @@ constructor arguments:
 methods:
   .draw(ctx, target): draws the text on a canvas at the targeted coordinates
       ctx... the context of the canvas to draw to, e.g. ctx=canvas.getContext('2d')
-      target... a Coords object {x: int, y: int [, width: int] [, height: int]} describing the position and size of the rendered sprite on the canvas
+      target... a Coords object {x: int, y: int [, width: int] [, height: int], offset: {x: int, y: int}, box: {tl: {x:int, y:int}, br: {x:int, y:int}}} describing the position and size of the rendered sprite on the canvas
                 if width and/or height aren't given, the sprite will be drawn in its original size (this.sw and/or this.sh)
 
 example:
@@ -35,12 +35,12 @@ class TextElement{
 
   update(){}
 
-  draw(ctx, target, offset){
+  draw(ctx, target){
     ctx.save();
     for (const [key, value] of Object.entries(this.style)){
       ctx[key] = value;
     }
-    ctx.fillText(this.text, target.x+offset.x, target.y+offset.y);
+    ctx.fillText(this.text, target.x+target.offset.x, target.y+target.offset.y);
     ctx.restore();
   }
 

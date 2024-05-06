@@ -16,7 +16,7 @@ class Scene{
     this.background = undefined;
     this.layers = [{}];
     this.layerOfItem = {};
-    this.items = {};   //this.items.myName is short for this.layers[layerOfItem.myName].mayName    //DEBUG: makes layerOfItem obsolete!?!
+    this.items = {};   //this.items.myName is short for this.layers[layerOfItem.myName].mayName    //TODO: makes layerOfItem obsolete!?!
   }
 
   static switchTo(nextScene){

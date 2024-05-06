@@ -116,7 +116,7 @@ class Inputs{
     for (let z=scene.layers.length-1; z>-1; z--){
       for (const[name, item] of Object.entries(scene.layers[z])){
         if (item.properties.clickable || item.properties.dragable){
-          if (this.position.x >= item.box.tl.x && this.position.x <= item.box.br.x && this.position.y >= item.box.tl.y && this.position.y <= item.box.br.y){
+          if (this.position.x >= item.target.box.tl.x && this.position.x <= item.target.box.br.x && this.position.y >= item.target.box.tl.y && this.position.y <= item.target.box.br.y){
             if (item.properties.clickable){  //TODO: bubbling?
               this.clicked.push(name);
               console.log(this.clicked); break;
@@ -143,8 +143,9 @@ class Inputs{
     this.dragOffset.set(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
     console.log(this.dragOffset);
     this.dragged.forEach((name)=>{
-      scene.items[name].setOffset(this.dragOffset)
-      console.log(scene.items[name].offset);});
+      scene.items[name].offset = this.dragOffset;
+      //console.log(scene.items[name].target.offset);
+    });
   }
 
   releaseHandler(evt){
@@ -154,7 +155,7 @@ class Inputs{
     cardgameCanvas.ctx.stroke();
     //TODO: above just for testing
     this.clicked.forEach((name)=>{
-      if (this.position.x >= scene.items[name].box.tl.x && this.position.x <= scene.items[name].box.br.x && this.position.y >= scene.items[name].box.tl.y && this.position.y <= scene.items[name].box.br.y){
+      if (this.position.x >= scene.items[name].target.box.tl.x && this.position.x <= scene.items[name].target.box.br.x && this.position.y >= scene.items[name].target.box.tl.y && this.position.y <= scene.items[name].target.box.br.y){
         scene.items[name].onClick();
       }
     });

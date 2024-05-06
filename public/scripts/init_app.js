@@ -42,7 +42,7 @@ function loadFiles(listOfFilesToLoad){
     function adjustLoadingBar(loadedSize){
       loadingstatus += loadedSize;
       scenes.loading.layers[1].loadingbar.asset.origin = {x:0, y:0, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height}; //layers[1] is hardcoded here
-      scenes.loading.layers[1].loadingbar.setTarget({x: PositionOfLoadingbar.x, y: PositionOfLoadingbar.y, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height});
+      scenes.loading.layers[1].loadingbar.target = {x: PositionOfLoadingbar.x, y: PositionOfLoadingbar.y, width:graphics.loadingbar.width*loadingstatus/listOfFilesToLoad.totalSize, height:graphics.loadingbar.height};
     }
     Promise.all([...loadAssets(graphics, 'img', listOfFilesToLoad.images, adjustLoadingBar), ...loadAssets(sounds, 'audio', listOfFilesToLoad.sounds, adjustLoadingBar)])
       .then(()=>{ //everythin is loaded
@@ -61,17 +61,21 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
 
   scenes['mainMenu'] = new Scene();
   scenes.mainMenu.setBackground(graphics['menu_background']);
-  scenes.mainMenu.addToLayer(0, 'clubs',  new Item(new Sprite(graphics.clubs),
+  scenes.mainMenu.addToLayer(2, 'clubs',  new Item(new Sprite(graphics.clubs),
                                                    {x:50, y:50},
                                                    ['clickable'],
-                                                    ()=>{console.log('clubs wurden gedrückt')}));
+                                                   ()=>{console.log('clubs wurden gedrückt')}
+                                                  ));
   scenes.mainMenu.addToLayer(0, 'spades', new Item(new Sprite(graphics.spades),
-                                                   {x:300, y:500, width: 1600, height: 50}));
+                                                   {x:300, y:500, width: 1600, height: 50}
+                                                  ));
   scenes.mainMenu.addToLayer(1, 'hearts', new Item(new Sprite(graphics.hearts),
                                                    {x:300, y:600, scale: 0.4},
                                                    ['dragable'],
-                                                    ()=>{},
-                                                    ()=>{scene.items.hearts.setOffset(new Point2D(0,0))}));
+                                                   ()=>{},
+                                                   ()=>{scene.items.hearts.offset = new Point2D(0,0)}
+                                                  ));
   scenes.mainMenu.addToLayer(0, 'someText', new Item(new TextElement('blaBlubb 09', {font: "100px Helvetica", fillStyle: 'black'}),
-                                                     {x:300, y:800}));
+                                                     {x:300, y:800}
+                                                    ));
 }
