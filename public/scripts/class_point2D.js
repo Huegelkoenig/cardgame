@@ -4,7 +4,7 @@ class Point2D{
     this.y = y;
   }
 
-  set(x,y){
+  assign(x,y){
     this.x = x;
     this.y = y;
   }

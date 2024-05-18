@@ -21,6 +21,7 @@ class Inputs{
 
   }
 
+  
   mouseDownHandler(evt){
     if (!this.pressed && evt.button==0){
         this.mouseDown = true;
@@ -54,6 +55,7 @@ class Inputs{
       this.releaseHandler(evt);
     }
   }
+
 
   touchStartHandler(evt){
     evt.preventDefault();
@@ -103,6 +105,7 @@ class Inputs{
     }
   }
 
+
   pressHandler(evt){
     //TODO: below just for testing
     console.log('press => x: ',this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
@@ -111,8 +114,8 @@ class Inputs{
     cardgameCanvas.ctx.moveTo(this.position.x, this.position.y);
     //TODO: above just for testing
     
-    this.pressedAt.set(this.position.x, this.position.y);
-    this.dragOffset.set(0,0);
+    this.pressedAt.assign(this.position.x, this.position.y);
+    this.dragOffset.assign(0,0);
     for (let z=scene.layers.length-1; z>-1; z--){
       for (const[name, item] of Object.entries(scene.layers[z])){
         if (item.properties.clickable || item.properties.dragable){
@@ -134,13 +137,14 @@ class Inputs{
     }
   }
 
+  
   dragHandler(evt){
     //TODO: below just for testing
     console.log('drag');
     cardgameCanvas.ctx.lineTo(this.position.x, this.position.y);
     cardgameCanvas.ctx.stroke();
     //TODO: above just for testing
-    this.dragOffset.set(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
+    this.dragOffset.assign(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
     console.log(this.dragOffset);
     this.dragged.forEach((name)=>{
       scene.items[name].offset = this.dragOffset;
@@ -165,6 +169,6 @@ class Inputs{
 
     this.clicked = [];
     this.dragged = [];
-    this.dragOffset.set(0,0);
+    this.dragOffset.assign(0,0);
   }  
 }

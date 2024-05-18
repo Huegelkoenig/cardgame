@@ -22,7 +22,7 @@ class Item{
   }
 
   set offset(offset){
-    this.#target.offset.set(offset.x, offset.y);
+    this.#target.offset.assign(offset.x, offset.y);
   }
 
   get offset(){
@@ -49,7 +49,8 @@ class Item{
     else { //not centered positions //TODO: dothis first and then offset it to centerposition
       switch (this.asset.type){ //TODO: add animation, squircle, etc
         case 'sprite':
-          this.#target.box.tl.set(this.#target.x, this.#target.y);
+        case 'squircle':
+          this.#target.box.tl.assign(this.#target.x, this.#target.y);
           if (this.#target.hasOwnProperty('scale')){
             this.#target.width = this.asset.origin.width*this.#target.scale;
             this.#target.height = this.asset.origin.height*this.#target.scale;
@@ -67,11 +68,11 @@ class Item{
           this.#target.width = cardgameCanvas.ctx.measureText(this.asset.text).width;
           this.#target.height = parseInt(cardgameCanvas.ctx.font.split(' ')[0].replace('px','').replace('pt','')); //doesn't give the exact height, but almost. this.target.height > realHeight
           cardgameCanvas.ctx.restore();
-          this.#target.box.tl.set(this.#target.x, this.#target.y-this.#target.height);
+          this.#target.box.tl.assign(this.#target.x, this.#target.y-this.#target.height);
         break;
       }
     }
-    this.#target.box.br.set (this.#target.box.tl.x + this.#target.width, this.#target.box.tl.y + this.#target.height);
+    this.#target.box.br.assign(this.#target.box.tl.x + this.#target.width, this.#target.box.tl.y + this.#target.height);
   }
 
   setProperties(props){

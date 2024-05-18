@@ -61,6 +61,7 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
 
   scenes['mainMenu'] = new Scene();
   scenes.mainMenu.setBackground(graphics['menu_background']);
+  /* //for testing
   scenes.mainMenu.addToLayer(2, 'clubs',  new Item(new Sprite(graphics.clubs),
                                                    {x:50, y:50},
                                                    ['clickable'],
@@ -73,9 +74,25 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                    {x:300, y:600, scale: 0.4},
                                                    ['dragable'],
                                                    ()=>{},
-                                                   ()=>{scene.items.hearts.offset = new Point2D(0,0)}
+                                                   ()=>{scene.items.hearts.offset.assign(0,0)} // item 'hearts' is send back to its original position 
                                                   ));
   scenes.mainMenu.addToLayer(0, 'someText', new Item(new TextElement('blaBlubb 09', {font: "100px Helvetica", fillStyle: 'black'}),
                                                      {x:300, y:800}
                                                     ));
+  */
+ scenes.mainMenu.addToLayer(0, 'squircle1', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                   {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                   {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                   {roundX:80, roundY:30, scale:0.68, color:'darkgreen'}],
+                                                                   'hi',
+                                                                   {font: '36px Comic Sans MS',
+                                                                    fillStyle: 'white'}
+                                                                  ),
+                                                     {x:1000, y:400, width: 300, height: 200},
+                                                     ['dragable'],
+                                                     ()=>{},
+                                                     ()=>{scene.items.squircle1.target = new Point2D(scene.items.squircle1.target.x + scene.items.squircle1.target.offset.x, //item 'squircle1' gets new position (including clickbox)
+                                                                                                     scene.items.squircle1.target.y + scene.items.squircle1.target.offset.y);
+                                                          scene.items.squircle1.target.offset.assign(0,0);
+                                                     }));
 }
