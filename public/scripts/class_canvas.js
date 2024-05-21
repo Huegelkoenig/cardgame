@@ -37,8 +37,8 @@ class Canvas{
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
 
-  drawImage(img, position, scale=1){
-    this.ctx.drawImage(img, position.x, position.y, scale*img.width, scale*img.height);//TODO:
+  drawImage(img, position, $_scale=1){
+    this.ctx.drawImage(img, position.x, position.y, $_scale*img.width, $_scale*img.height);//TODO:
   }
 }
 
@@ -127,10 +127,10 @@ class FARCanvas extends Canvas{
     this.ctx.fill();
     this.ctx.stroke();
   }
-  filltext(username){
+  /*filltext(username){
     this.setctxProperties({font: "30px Arial"});
     this.ctx.fillText(`hi ${username} w:${fullscreenCanvas.canvas.width} h:${fullscreenCanvas.canvas.height} screen-w:${screen.width} screen-h:${screen.height} dpr:${window.devicePixelRatio} scale:${window.visualViewport.scale}`, 250, 225);
-  }
+  }*/
   filltext(text, position){
     this.setctxProperties({font: "30px Arial"});
     this.ctx.fillText(text, position.x, position.y);

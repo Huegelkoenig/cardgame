@@ -8,20 +8,16 @@ class Inputs{
       this.touchId = 0;
       this.pressed = false;
       this.pressedAt  = new Point2D();
+      this.hovered = [];
+      this.unhovered = [];
       this.clicked = [];
       this.dragged = [];
+      this.dragAlreadyStarted = false;
       this.dragOffset = new Point2D(0,0);
-      window.addEventListener("mousedown", (evt)=>{this.mouseDownHandler(evt)});
-      window.addEventListener("mousemove", (evt)=>{this.mouseMoveHandler(evt)});
-      window.addEventListener("mouseup", (evt)=>{this.mouseUpHandler(evt)});
-      window.addEventListener("touchstart",(evt)=>{this.touchStartHandler(evt)});
-      window.addEventListener("touchmove", (evt)=>{this.touchMoveHandler(evt)});
-      window.addEventListener("touchend", (evt)=>{this.touchEndHandler(evt)});
-      window.addEventListener("touchcancel", (evt)=>{this.touchCancelHandler(evt)});
-
   }
 
-  
+
+  // MOUSE
   mouseDownHandler(evt){
     if (!this.pressed && evt.button==0){
         this.mouseDown = true;
@@ -36,17 +32,20 @@ class Inputs{
     }
   }
 
+
   mouseMoveHandler(evt){  //mouse drag
+    this.screenPosition.x = evt.x;
+    this.screenPosition.y = evt.y;
+    this.absPosition.x = evt.x-cardgameCanvas.rect.x;
+    this.absPosition.y = evt.y-cardgameCanvas.rect.y;
+    this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+    this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+    this.moveHandler();
     if(this.mouseDown){
-      this.screenPosition.x = evt.x;
-      this.screenPosition.y = evt.y;
-      this.absPosition.x = evt.x-cardgameCanvas.rect.x;
-      this.absPosition.y = evt.y-cardgameCanvas.rect.y;
-      this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
-      this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
       this.dragHandler(evt);
     }
   }
+
 
   mouseUpHandler(evt){
     if (this.mouseDown && evt.button==0){
@@ -57,6 +56,8 @@ class Inputs{
   }
 
 
+
+  // TOUCH
   touchStartHandler(evt){
     evt.preventDefault();
     if (!this.pressed){
@@ -70,22 +71,27 @@ class Inputs{
       this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
       this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
       this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+      this.moveHandler(evt);
       this.pressHandler(evt);        
     }
   }
 
+
   touchMoveHandler(evt){
     evt.preventDefault();
+    this.screenPosition.x = evt.changedTouches[0].pageX;
+    this.screenPosition.y = evt.changedTouches[0].pageY;
+    this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
+    this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
+    this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+    this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
     if (this.touched && evt.changedTouches[0].identifier == this.touchId){
-      this.screenPosition.x = evt.changedTouches[0].pageX;
-      this.screenPosition.y = evt.changedTouches[0].pageY;
-      this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
-      this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
-      this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
-      this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
       this.dragHandler(evt);
+      return;
     }
+    this.moveHandler();
   }
+
 
   touchEndHandler(evt){
     evt.preventDefault();
@@ -96,12 +102,39 @@ class Inputs{
     }
   }
 
+
   touchCancelHandler(evt){
     evt.preventDefault();
     if (this.touched){
       this.touched = false;
       this.pressed = false;
       //TODO: alles rückgängig => speichere Startwerte in this.x_original etc um drags rückgängig zu machen(???)
+    }
+  }
+
+
+  // HANDLERS
+  moveHandler(evt){
+    //first, check for items that arent hovered anymore
+    this.hovered.forEach((name)=>{  //if not hovered anymore...
+      if (this.position.x < scene.items[name].target.box.tl.x || this.position.x > scene.items[name].target.box.br.x || this.position.y < scene.items[name].target.box.tl.y || this.position.y > scene.items[name].target.box.br.y){
+        this.unhovered.push(name);
+      }
+    });
+    this.unhovered.forEach((name)=>{
+      scene.items[name].actions.unhover(); //...run the .unhover() action of these items...
+      let idx = this.hovered.indexOf(name);
+      this.hovered.splice(idx, 1); //.. and delete them from the hovered-list
+    });
+    this.unhovered = [];
+    //next, check for newly hovered items
+    for (const[name, item] of Object.entries(scene.items)){
+      if (this.position.x >= item.target.box.tl.x && this.position.x <= item.target.box.br.x && this.position.y >= item.target.box.tl.y && this.position.y <= item.target.box.br.y){
+        if (!this.hovered.includes(name)){ //if this item isn't already marked as hovered...
+          this.hovered.push(name);         //... run the .hover() action
+          scene.items[name].actions.hover();
+        }
+      };
     }
   }
 
@@ -117,23 +150,21 @@ class Inputs{
     this.pressedAt.assign(this.position.x, this.position.y);
     this.dragOffset.assign(0,0);
     for (let z=scene.layers.length-1; z>-1; z--){
-      for (const[name, item] of Object.entries(scene.layers[z])){
-        if (item.properties.clickable || item.properties.dragable){
-          if (this.position.x >= item.target.box.tl.x && this.position.x <= item.target.box.br.x && this.position.y >= item.target.box.tl.y && this.position.y <= item.target.box.br.y){
-            if (item.properties.clickable){  //TODO: bubbling?
+      scene.layers[z].forEach((name)=>{
+        if (scene.items[name].properties.clickable || scene.items[name].properties.dragable){
+          if (this.position.x >= scene.items[name].target.box.tl.x && this.position.x <= scene.items[name].target.box.br.x && this.position.y >= scene.items[name].target.box.tl.y && this.position.y <= scene.items[name].target.box.br.y){
+            if (scene.items[name].properties.clickable){  //TODO: bubbling?
               this.clicked.push(name);
-              console.log(this.clicked); break;
             };
-            if (item.properties.dragable){ //TODO: bubbling
+            if (scene.items[name].properties.dragable){ //TODO: bubbling
               this.dragged.push(name);
-              console.log(this.dragged); break;
             };
           }
         }
-      }
-      if (this.clicked.length>0 || this.dragged.length>0){  //TODO: bubbling?   now, it exits the layers-loop
-        break;
-      }
+    });
+    if (this.clicked.length>0 || this.dragged.length>0){  //TODO: bubbling?   atm: it exits the layers-loop
+      break;
+    }
     }
   }
 
@@ -147,10 +178,15 @@ class Inputs{
     this.dragOffset.assign(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
     console.log(this.dragOffset);
     this.dragged.forEach((name)=>{
-      scene.items[name].offset = this.dragOffset;
-      //console.log(scene.items[name].target.offset);
+      scene.items[name].offset.assign(this.dragOffset.x, this.dragOffset.y);
+      if (!this.dragAlreadyStarted){
+        this.dragAlreadyStarted = true;
+        scene.items[name].actions.dragStart();
+      }
+      scene.items[name].actions.onDrag();
     });
   }
+
 
   releaseHandler(evt){
     //TODO: below just for testing
@@ -160,11 +196,12 @@ class Inputs{
     //TODO: above just for testing
     this.clicked.forEach((name)=>{
       if (this.position.x >= scene.items[name].target.box.tl.x && this.position.x <= scene.items[name].target.box.br.x && this.position.y >= scene.items[name].target.box.tl.y && this.position.y <= scene.items[name].target.box.br.y){
-        scene.items[name].onClick();
+        scene.items[name].actions.onClick();
       }
     });
     this.dragged.forEach((name)=>{
-      scene.items[name].afterDrag();
+      this.dragAlreadyStarted = false;
+      scene.items[name].actions.dragEnd();
     })
 
     this.clicked = [];

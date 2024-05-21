@@ -14,9 +14,8 @@
 class Scene{
   constructor(){
     this.background = undefined;
-    this.layers = [{}];
-    this.layerOfItem = {};
-    this.items = {};   //this.items.myName is short for this.layers[layerOfItem.myName].mayName    //TODO: makes layerOfItem obsolete!?!
+    this.layers = [];
+    this.items = {}; 
   }
 
   static switchTo(nextScene){
@@ -32,43 +31,49 @@ class Scene{
     this.background = img;
   }
 
-  addToLayer(i, name, item){
-    while (i > this.layers.length-1){
-      this.layers.push({});
+  addItem(name, item){
+    this.items[name] = item;
+    while (item.target.layer > this.layers.length-1){
+      this.layers.push([]);
     }
-    this.layers[i][name] = item;
-    this.layerOfItem[name] = i;
-    this.items[name] = this.layers[i][name];
+    this.layers[item.target.layer].push(name);
   }
 
-  pushOnTop(name, item){
-    let i = this.layers.length;
-    this.layers.push({});
-    this.layers[i][name] = item;
-    this.layerOfItem[name] = i;
-    this.items[name] = this.layers[i][name];
+
+  changeLayer(name, newLayer){
+    //delete the old layer of the item 'name'
+    let idx = this.layers[scene.items[name].target.layer].indexOf(name);
+    this.layers[scene.items[name].target.layer].splice(idx, 1); 
+    //set layer of item 'name' to newLayer
+    this.items[name].target.layer = newLayer;
+    //enter 'name' into layers[newLayer]:
+    //if necessary: fill layers[i] with []
+    while (newLayer > this.layers.length-1){
+      this.layers.push([]);
+    }
+    this.layers[newLayer].push(name);
+    //if necessary: delete empty layers on top
+    while (this.layers[this.layers.length-1].length == 0){
+      this.layers.length -= 1;
+    }
+  }
+  
+  pushToTop(name){
+    this.changeLayer(name, this.layers.length);
   }
 
   getLayerOf(name){
-    return this.layerOfItem[name]
-  }
-
-  setAttributes(name, attributes){   //do i need this?
-    let layer = this.getLayerOf(name);
-    for (const [key, value] of Object.entries(attributes)){
-      this.layers[layer][name][key] = value;
-    }
-    
+    return name.target.layer
   }
 
   removeItem(name){
-    let layer = this.getLayerOf(name);
-    delete this.layers[layer][name];
-    while (layer>-1 && layer==(this.layers.length-1) && Object.keys(this.layers[layer]).length == 0){
+    let layer = this.items[name].target.layer;
+    let idx = this.layers[layer].indexOf(name);
+    this.layers[layer].splice(idx, 1);
+    while (layer>-1 && layer==(this.layers.length-1) && this.layers[layer].length == 0){
       this.layers.pop();
       layer--;
     }
-    delete this.layerOfItem[name];
     delete this.items[name];
   }
 

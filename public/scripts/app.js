@@ -5,9 +5,7 @@ function gameLoop(timeStamp){
 
   cardgameCanvas.clear();
   for(z=0; z<scene.layers.length; ++z){
-    for (const item of Object.values(scene.layers[z])){
-      item.draw(cardgameCanvas.ctx);
-    };
+    scene.layers[z].forEach((name) => scene.items[name].draw(cardgameCanvas.ctx))
   }
   requestAnimationFrame(gameLoop);
 }

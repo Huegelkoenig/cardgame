@@ -1,16 +1,16 @@
 class Point2D{
-  constructor(x=0,y=0){
+  constructor($_x=0, $_y=0){
+    this.x = $_x;
+    this.y = $_y;
+  }
+
+  assign(x, y){
     this.x = x;
     this.y = y;
   }
 
-  assign(x,y){
-    this.x = x;
-    this.y = y;
-  }
-
-  static dist(a,b){
-    return Math.sqrt((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y));
+  static dist(A,B){
+    return Math.sqrt((B.x-A.x)*(B.x-A.x) + (B.y-A.y)*(B.y-A.y));
   }
 
   

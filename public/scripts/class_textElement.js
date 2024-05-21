@@ -30,7 +30,10 @@ class TextElement{
   constructor(text, $_style={}){
     this.type = 'text';
     this.text = text;
-    this.style = $_style;
+    this.style = {};
+    for (const [key, value] of Object.entries($_style)){
+      this.style[key] = value;
+    }
   }
 
   update(){}
