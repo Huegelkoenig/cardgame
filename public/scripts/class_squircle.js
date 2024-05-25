@@ -84,4 +84,6 @@ class Squircle{
   render(ctx,target){
     this.draw(ctx,target);
   }
+
+  update(){}
 }

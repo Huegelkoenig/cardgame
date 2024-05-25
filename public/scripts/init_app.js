@@ -97,8 +97,9 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                                   ),
                                                      {layer: 0, x:1000, y:400, width: 300, height: 200},
                                                      ['dragable'],
-                                                     {dragStart: ()=>{scene.pushToTop('squircle1')},
-                                                      onDrag: ()=>{scene.items.squircle1.asset.text = 'draaaaaag'},
+                                                     {dragStart: ()=>{scene.pushToTop('squircle1');
+                                                                      scene.items.squircle1.asset.text = 'X';},
+                                                      onDrag: ()=>{scene.items.squircle1.asset.text += 'X'},
                                                       dragEnd: ()=>{scene.changeLayer('squircle1', 0);
                                                                     scene.items.squircle1.asset.text = 'not anymore';
                                                                     scene.items.squircle1.target = new Point2D(scene.items.squircle1.target.x + scene.items.squircle1.target.offset.x, //item 'squircle1' gets new position (including clickbox)
@@ -115,10 +116,24 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                                   ),
                                                      {layer: 0, x:500, y:200, width: 300, height: 200},
                                                      ['dragable'],
-                                                     {hover: ()=>{scene.items.squircle2.asset.text = 'hovered'},
+                                                     {hover: ()=>{if (!inputs.dragAlreadyStarted){scene.items.squircle2.asset.text = 'hovered';}},
                                                       unhover: ()=>{scene.items.squircle2.asset.text = 'unhovered'},
                                                       dragStart: ()=>{scene.pushToTop('squircle2')},
-                                                      dragEnd: ()=>{scene.changeLayer('squircle2', 0)}
+                                                      dragEnd: ()=>{scene.changeLayer('squircle2', 0);
+                                                                    scene.items.squircle2.offset.assign(0,0);
+                                                                   }
                                                      }
-                              ));                                                    
+                              ));    
+  scenes.mainMenu.addItem('animation', new Item(new Animation(graphics.hearts, 2000, new Coords(0,0,graphics.hearts.width/10,graphics.hearts.height), new Coords(graphics.hearts.width/10,0,0,0), [0,2,4,6,8]),
+                                                {layer:1, x:200, y:600, width: 200, height: 300},
+                                                ['dragable', 'clickable'],
+                                                {onClick: ()=>{scene.items.animation.asset.trigger()},
+                                                 dragStart: ()=>{scene.pushToTop('animation')},
+                                                 dragEnd: ()=>{scene.changeLayer('animation', 0);
+                                                               scene.items.animation.target = new Point2D(scene.items.animation.target.x + scene.items.animation.target.offset.x, //item 'animation' gets new position (including clickbox)
+                                                                                                          scene.items.animation.target.y + scene.items.animation.target.offset.y);
+                                                               scene.items.animation.target.offset.assign(0,0);
+                                                              }
+                                                }
+                                              ));
 }

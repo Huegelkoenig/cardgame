@@ -143,8 +143,6 @@ class Inputs{
     //TODO: below just for testing
     console.log('press => x: ',this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
     socket.emit('press', this.position.x, this.position.y);
-    cardgameCanvas.ctx.beginPath();
-    cardgameCanvas.ctx.moveTo(this.position.x, this.position.y);
     //TODO: above just for testing
     
     this.pressedAt.assign(this.position.x, this.position.y);

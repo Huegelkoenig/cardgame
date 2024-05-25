@@ -59,7 +59,8 @@ class Item{
     else { //not centered positions //TODO: do this first and then offset it to centerposition
       switch (this.asset.type){ //TODO: add animation, squircle, etc
         case 'sprite':
-        case 'squircle': //works for squircle only if scale is in between 0-1
+        case 'animation':
+        case 'squircle': //works for squircle only if scale is in between 0-1  //TODO: write its own case if needed for scales>1
           this.#target.box.tl.assign(this.#target.x, this.#target.y);
           if (this.#target.hasOwnProperty('scale')){
             this.#target.width = this.asset.origin.width*this.#target.scale;
@@ -100,6 +101,10 @@ class Item{
         this.asset.draw(ctx, this.target);
       }
     }    
+  }
+
+  update(){
+    this.asset.update();
   }
 
 }
