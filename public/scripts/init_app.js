@@ -62,32 +62,35 @@ function loadFiles(listOfFilesToLoad){
 
 
 
-function defineScenes(){  //TODO: each class for assets has its own .draw method  (like in class_textElement.js or class_Ssprite.js)
+function defineScenes(){  //TODO: each class for assets has its own .draw method  (like in class_textElement.js or class_sprite.js)
+  //------vvv intro vvv----------------------------------------------------------------------
   scenes['intro'] = new Scene();
   scenes.intro.setBackground(graphics['aatolex']);  //has exactly 2000x900pixels
+  //-----^^^ intro ^^^-----------------------------------------------------------------------
 
-  scenes['mainMenu'] = new Scene();
-  scenes.mainMenu.setBackground(graphics['menu_background']);
+  //-----vvv testScene vvv-------------------------------------------------------------------
+  scenes['testScene'] = new Scene();
+  scenes.testScene.setBackground(graphics['test_background']);
   /* //for testing
-  scenes.mainMenu.addToLayer('clubs',  new Item(new Sprite(graphics.clubs),
+  scenes.testScene.addToLayer('clubs',  new Item(new Sprite(graphics.clubs),
                                                    {layer: 2, x:50, y:50},
                                                    ['clickable'],
                                                    ()=>{console.log('clubs wurden gedrückt')}
                                                   ));
-  scenes.mainMenu.addToLayer('spades', new Item(new Sprite(graphics.spades),
+  scenes.testScene.addToLayer('spades', new Item(new Sprite(graphics.spades),
                                                    {layer: 0, x:300, y:500, width: 1600, height: 50}
                                                   ));
-  scenes.mainMenu.addToLayer('hearts', new Item(new Sprite(graphics.hearts),
+  scenes.testScene.addToLayer('hearts', new Item(new Sprite(graphics.hearts),
                                                    {layer: 1, x:300, y:600, scale: 0.4},
                                                    ['dragable'],
                                                    ()=>{},
                                                    ()=>{scene.items.hearts.offset.assign(0,0)} // item 'hearts' is send back to its original position 
                                                   ));
-  scenes.mainMenu.addToLayer('someText', new Item(new TextElement('blaBlubb 09', {font: "100px Helvetica", fillStyle: 'black'}),
+  scenes.testScene.addToLayer('someText', new Item(new TextElement('blaBlubb 09', {font: "100px Helvetica", fillStyle: 'black'}),
                                                      {layer: 0, x:300, y:800}
                                                     ));
   */
-  scenes.mainMenu.addItem('squircle1', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+  scenes.testScene.addItem('squircle1', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
                                                                    {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
                                                                    {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
                                                                    {roundX:80, roundY:30, scale:0.68, color:'darkgreen'}],
@@ -106,7 +109,7 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                                                                                scene.items.squircle1.target.y + scene.items.squircle1.target.offset.y);
                                                                     scene.items.squircle1.target.offset.assign(0,0);}}
                                                       ));
-  scenes.mainMenu.addItem('squircle2', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+  scenes.testScene.addItem('squircle2', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
                                                                    {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
                                                                    {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
                                                                    {roundX:80, roundY:30, scale:0.68, color:'darkgreen'}],
@@ -124,7 +127,7 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                                    }
                                                      }
                               ));    
-  scenes.mainMenu.addItem('animation', new Item(new Animation(graphics.hearts, 2000, new Coords(0,0,graphics.hearts.width/10,graphics.hearts.height), new Coords(graphics.hearts.width/10,0,0,0), [0,2,4,6,8]),
+  scenes.testScene.addItem('animation', new Item(new Animation(graphics.hearts, 2000, new Coords(0,0,graphics.hearts.width/10,graphics.hearts.height), new Coords(graphics.hearts.width/10,0,0,0), [0,2,4,6,8]),
                                                 {layer:1, x:200, y:600, width: 200, height: 300},
                                                 ['dragable', 'clickable'],
                                                 {onClick: ()=>{scene.items.animation.asset.trigger()},
@@ -136,4 +139,164 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
                                                               }
                                                 }
                                               ));
+  //-----^^^ testScene ^^^-------------------------------------------------------------------
+
+  //-----vvv mainMenu vvv--------------------------------------------------------------------
+  scenes['mainMenu'] = new Scene();
+  scenes.mainMenu.setBackground(graphics['mainMenu_background']);
+
+  scenes.mainMenu.addItem('button_quickstart', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                   {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                   {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                   {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                   'Quickstart',
+                                                                   {font: '32px Comic Sans MS',
+                                                                    fillStyle: 'white'}
+                                                                  ),
+                                                     {layer: 0, x:850, y:100, width: 300, height: 200},
+                                                     ['clickable'],
+                                                     {hover: ()=>{scene.items.button_quickstart.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                                  scene.items.button_quickstart.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                                  scene.items.button_quickstart.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                      unhover: ()=>{scene.items.button_quickstart.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                    scene.items.button_quickstart.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                    scene.items.button_quickstart.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                      onClick: ()=>{scene.items.button_quickstart.actions.unhover();
+                                                                    Scene.switchTo('quickstart');}
+                                                     }
+                                                      ));
+
+  scenes.mainMenu.addItem('button_createGame', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                   {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                   {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                   {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                   'Create Game',
+                                                                   {font: '32px Comic Sans MS',
+                                                                    fillStyle: 'white'}
+                                                                  ),
+                                                     {layer: 0, x:850, y:350, width: 300, height: 200},
+                                                     ['clickable'],
+                                                     {hover: ()=>{scene.items.button_createGame.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                                  scene.items.button_createGame.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                                  scene.items.button_createGame.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                      unhover: ()=>{scene.items.button_createGame.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                    scene.items.button_createGame.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                    scene.items.button_createGame.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                      onClick: ()=>{scene.items.button_createGame.actions.unhover();
+                                                                    Scene.switchTo('createGame');}
+                                                     }
+                                                      ));
+  scenes.mainMenu.addItem('button_joinGame', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                   {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                   {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                   {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                   'Join Game',
+                                                                   {font: '32px Comic Sans MS',
+                                                                    fillStyle: 'white'}
+                                                                  ),
+                                                     {layer: 0, x:850, y:600, width: 300, height: 200},
+                                                     ['clickable'],
+                                                     {hover: ()=>{scene.items.button_joinGame.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                                  scene.items.button_joinGame.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                                  scene.items.button_joinGame.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                      unhover: ()=>{scene.items.button_joinGame.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                    scene.items.button_joinGame.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                    scene.items.button_joinGame.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                      onClick: ()=>{scene.items.button_joinGame.actions.unhover();
+                                                                    Scene.switchTo('joinGame');}
+                                                     }
+                              ));
+//-----^^^ mainMenu ^^^--------------------------------------------------------------------
+
+
+//-----vvv quickstart vvv-------------------------------------------------------------------
+scenes['quickstart'] = new Scene();
+scenes.quickstart.setBackground(graphics['quickstart_background']);
+scenes.quickstart.addItem('quickstart_text', new Item(new TextElement('Waiting for other players',{font: '32px Comic Sans MS',fillStyle: 'black'}),
+                                                      {layer: 0, x:500, y:400}
+                          ));
+scenes.quickstart.addItem('button_back', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                'Back',
+                                                                {font: '32px Comic Sans MS',
+                                                                 fillStyle: 'white'}
+                                                                ),
+                                                  {layer: 0, x:850, y:600, width: 300, height: 200},
+                                                  ['clickable'],
+                                                  {hover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                               scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                               scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                   unhover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                 scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                 scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                   onClick: ()=>{scene.items.button_back.actions.unhover();
+                                                                 Scene.switchTo('mainMenu')}
+                                                  }
+                          ));
+scenes.quickstart.events.start = ()=>{scenes.quickstart.variables.refreshID = setInterval(()=>{scene.items.quickstart_text.asset.text += '.'; if(scene.items.quickstart_text.asset.text.length>28){scene.items.quickstart_text.asset.text = 'Waiting for other players'}},1000)};
+scenes.quickstart.events.stop = ()=>{clearInterval(scenes.quickstart.variables.refreshID)};
+//-----^^ quickstart ^^^-------------------------------------------------------------------
+
+
+//-----vvv createGame vvv-------------------------------------------------------------------
+scenes['createGame'] = new Scene();
+scenes.createGame.setBackground(graphics['createGame_background']);
+scenes.createGame.addItem('createGame_text', new Item(new TextElement('create a game',{font: '32px Comic Sans MS',fillStyle: 'black'}),
+                                                      {layer: 0, x:500, y:400}
+                          ));
+scenes.createGame.addItem('button_back', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                'Back',
+                                                                {font: '32px Comic Sans MS',
+                                                                 fillStyle: 'white'}
+                                                                ),
+                                                  {layer: 0, x:850, y:600, width: 300, height: 200},
+                                                  ['clickable'],
+                                                  {hover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                               scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                               scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                   unhover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                 scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                 scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                   onClick: ()=>{scene.items.button_back.actions.unhover();
+                                                                 Scene.switchTo('mainMenu')}
+                                                  }
+                          ));
+//-----^^ createGame ^^^-------------------------------------------------------------------
+
+
+//-----vvv joinGame vvv-------------------------------------------------------------------
+scenes['joinGame'] = new Scene();
+scenes.joinGame.setBackground(graphics['joinGame_background']);
+scenes.joinGame.addItem('joinGame_text', new Item(new TextElement('join a game',{font: '32px Comic Sans MS',fillStyle: 'black'}),
+                                                      {layer: 0, x:500, y:400}
+                          ));
+scenes.joinGame.addItem('button_back', new Item(new Squircle([{roundX:20, roundY:70, scale:1, color:'rgba(0,0,255,0.3)'},
+                                                                {roundX:0, roundY:0, scale:0.89, color:'rgba(245,155,66,0.3)'},
+                                                                {roundX:100, roundY:100, scale:0.86, color:'rgba(255,255,255,0.3)'},
+                                                                {roundX:80, roundY:30, scale:0.68, color:'rgba(0,100,0,1)'}],
+                                                                'Back',
+                                                                {font: '32px Comic Sans MS',
+                                                                 fillStyle: 'white'}
+                                                                ),
+                                                  {layer: 0, x:850, y:600, width: 300, height: 200},
+                                                  ['clickable'],
+                                                  {hover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.7)';
+                                                               scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.7)';
+                                                               scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.7)'},
+                                                   unhover: ()=>{scene.items.button_back.asset.layers[0].color = 'rgba(0,0,255,0.3)';
+                                                                 scene.items.button_back.asset.layers[1].color = 'rgba(245,155,66,0.3)';
+                                                                 scene.items.button_back.asset.layers[2].color = 'rgba(255,255,255,0.3)'},
+                                                   onClick: ()=>{scene.items.button_back.actions.unhover();
+                                                                 Scene.switchTo('mainMenu')}
+                                                  }
+                          ));
+//-----^^^ joinGame ^^^-------------------------------------------------------------------
+
+
+                                              
 }

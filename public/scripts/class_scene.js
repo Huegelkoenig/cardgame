@@ -15,15 +15,21 @@ class Scene{
   constructor(){
     this.background = undefined;
     this.layers = [];
-    this.items = {}; 
+    this.items = {};
+    this.events = {start: ()=>{},
+                   stop: ()=>{}};
+    this.variables = {};
   }
 
   static switchTo(nextScene){
     if (scenes.hasOwnProperty(nextScene)){
+      scene.events.stop();
       scene = scenes[nextScene];
+      inputs.hovered = [];
       if (scene.background != undefined){
         backgroundCanvas.drawImage(scene.background, new Point2D(0,0), 1);
       }
+      scene.events.start();
     }    
   }
 
