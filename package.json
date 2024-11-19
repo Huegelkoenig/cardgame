@@ -1,6 +1,6 @@
 {
   "name": "cardgame",
-  "version": "0.30.2",
+  "version": "0.31.0",
   "description": "A simple pvp cardgame created with Javascript, node.js and socket.io",
   "main": "server.js",
   "scripts": {
@@ -33,10 +33,6 @@
     "fs": "0.0.1-security",
     "http": "0.0.1-security",
     "https": "^1.0.0",
-<<<<<<< HEAD
-=======
-    "localtunnel": "^2.0.2",
->>>>>>> 5aa679cae44296d744ac3753aea469c00e328a0c
     "mysql": "^2.18.1",
     "nodemailer": "^6.9.12",
     "perf_hooks": "0.0.1",

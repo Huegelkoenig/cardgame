@@ -30,7 +30,10 @@ class Scene{
         backgroundCanvas.drawImage(scene.background, new Point2D(0,0), 1);
       }
       scene.events.start();
-    }    
+      if (inputs.device == 1){ //mouse
+        inputs.moveHandler();
+      }
+    }
   }
 
   setBackground(img){

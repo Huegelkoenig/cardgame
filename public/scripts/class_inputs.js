@@ -14,6 +14,7 @@ class Inputs{
       this.dragged = [];
       this.dragAlreadyStarted = false;
       this.dragOffset = new Point2D(0,0);
+      this.device = 0; //1 for mouse, 2 for touch
   }
 
 
@@ -28,6 +29,7 @@ class Inputs{
         this.absPosition.y = evt.y-cardgameCanvas.rect.y;
         this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
         this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+        this.device = 1;
         this.pressHandler(evt);
     }
   }
@@ -40,6 +42,7 @@ class Inputs{
     this.absPosition.y = evt.y-cardgameCanvas.rect.y;
     this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
     this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+    this.device = 1;
     this.moveHandler();
     if(this.mouseDown){
       this.dragHandler(evt);
@@ -51,6 +54,7 @@ class Inputs{
     if (this.mouseDown && evt.button==0){
       this.mouseDown = false;
       this.pressed = false;
+      this.device = 1;
       this.releaseHandler(evt);
     }
   }
@@ -64,13 +68,13 @@ class Inputs{
       this.touched = true;
       this.pressed = true;
       this.touchId = evt.changedTouches[0].identifier;
-      console.log(evt);
       this.screenPosition.x = evt.changedTouches[0].pageX;
       this.screenPosition.y = evt.changedTouches[0].pageY;
       this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
       this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
       this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
       this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+      this.device = 2;
       this.moveHandler(evt);
       this.pressHandler(evt);        
     }
@@ -85,6 +89,7 @@ class Inputs{
     this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
     this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
     this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+    this.device = 2;
     if (this.touched && evt.changedTouches[0].identifier == this.touchId){
       this.dragHandler(evt);
       return;
@@ -98,6 +103,7 @@ class Inputs{
     if (this.touched && evt.changedTouches[0].identifier == this.touchId){
       this.touched = false;
       this.pressed = false;
+      this.device = 2;
       this.releaseHandler(evt);
     }
   }
@@ -108,6 +114,7 @@ class Inputs{
     if (this.touched){
       this.touched = false;
       this.pressed = false;
+      this.device = 0;
       //TODO: alles rückgängig => speichere Startwerte in this.x_original etc um drags rückgängig zu machen(???)
     }
   }
@@ -140,10 +147,10 @@ class Inputs{
 
 
   pressHandler(evt){
-    //TODO: below just for testing
+    //DELETE: below just for testing
     console.log('press => x: ',this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
     socket.emit('press', this.position.x, this.position.y);
-    //TODO: above just for testing
+    //DELETE: above just for testing
     
     this.pressedAt.assign(this.position.x, this.position.y);
     this.dragOffset.assign(0,0);
@@ -168,11 +175,12 @@ class Inputs{
 
   
   dragHandler(evt){
-    //TODO: below just for testing
+    //DELETE: below just for testing
     console.log('drag');
     cardgameCanvas.ctx.lineTo(this.position.x, this.position.y);
     cardgameCanvas.ctx.stroke();
-    //TODO: above just for testing
+    //DELETE: above just for testing
+
     this.dragOffset.assign(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
     console.log(this.dragOffset);
     this.dragged.forEach((name)=>{
@@ -187,11 +195,12 @@ class Inputs{
 
 
   releaseHandler(evt){
-    //TODO: below just for testing
+    //DELETE: below just for testing
     console.log('release => x: ', this.position.x, 'y: ', this.position.y, 'cardgameCanvas.scale: ', cardgameCanvas.scale);
     socket.emit('release', this.position.x, this.position.y)
     cardgameCanvas.ctx.stroke();
-    //TODO: above just for testing
+    //DELETE: above just for testing
+
     this.clicked.forEach((name)=>{
       if (this.position.x >= scene.items[name].target.box.tl.x && this.position.x <= scene.items[name].target.box.br.x && this.position.y >= scene.items[name].target.box.tl.y && this.position.y <= scene.items[name].target.box.br.y){
         scene.items[name].actions.onClick();

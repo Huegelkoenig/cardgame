@@ -16,7 +16,6 @@ class Squircle
 description:
   a simple class for squircles
   !constructor and method arguments must match the intented format!
-  !use function newSquircle() to check arguments!
 
 constructor arguments:
   layers... an array of layers, from outer to inner.
