@@ -1,17 +1,11 @@
 class Inputs{
   constructor(){
-      this.screenPosition = new Point2D() //relative to screen   //TODO: probably not needed => delete all occurances below
-      this.absPosition = new Point2D();   //relative to cardgameCanvas rect  TODO: probably not needed => delete all occurances below
-      this.position = new Point2D();      //relative to cardgameCanvas.rect cardgameCanvas.scale
+      this.position = new Point2D(0,0);      //relative to cardgameCanvas.rect cardgameCanvas.scale , initialize at (0,0)
       this.mouseDown = false;
       this.touched = false;
       this.touchId = 0;
       this.pressed = false;
       this.pressedAt  = new Point2D();
-      this.hovered = [];
-      this.unhovered = [];
-      this.clicked = [];
-      this.dragged = [];
       this.dragAlreadyStarted = false;
       this.dragOffset = new Point2D(0,0);
       this.device = 0; //1 for mouse, 2 for touch
@@ -19,33 +13,26 @@ class Inputs{
 
 
   // MOUSE
-  mouseDownHandler(evt){
-    if (!this.pressed && evt.button==0){
-        this.mouseDown = true;
-        this.pressed = true;
-        this.screenPosition.x = evt.x;
-        this.screenPosition.y = evt.y;
-        this.absPosition.x = evt.x-cardgameCanvas.rect.x;
-        this.absPosition.y = evt.y-cardgameCanvas.rect.y;
-        this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
-        this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
-        this.device = 1;
-        this.pressHandler(evt);
+  mouseMoveHandler(evt){  //mouse drag
+    if (!this.touched){
+      this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+      this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+      this.device = 1;
+      this.moveHandler();
     }
   }
 
 
-  mouseMoveHandler(evt){  //mouse drag
-    this.screenPosition.x = evt.x;
-    this.screenPosition.y = evt.y;
-    this.absPosition.x = evt.x-cardgameCanvas.rect.x;
-    this.absPosition.y = evt.y-cardgameCanvas.rect.y;
-    this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
-    this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
-    this.device = 1;
-    this.moveHandler();
-    if(this.mouseDown){
-      this.dragHandler(evt);
+  mouseDownHandler(evt){
+    if (!this.pressed && evt.button==0){ // if(!this.pressed) same as if(!this.touched), but also immediatelly takes into account when a second (e.g. middle, right) mouse button is clicked
+        this.mouseDown = true;
+        this.pressed = true;        
+        this.position.x = (evt.x-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+        this.position.y = (evt.y-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+        this.pressedAt.x = this.position.x;
+        this.pressedAt.y = this.position.y;
+        this.device = 1;
+        this.pressHandler(evt);
     }
   }
 
@@ -64,36 +51,26 @@ class Inputs{
   // TOUCH
   touchStartHandler(evt){
     evt.preventDefault();
-    if (!this.pressed){
+    if (!this.pressed){  //when not already mouseDown and not already touched with another finger
+      this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
+      this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+      this.moveHandler(evt);
       this.touched = true;
       this.pressed = true;
       this.touchId = evt.changedTouches[0].identifier;
-      this.screenPosition.x = evt.changedTouches[0].pageX;
-      this.screenPosition.y = evt.changedTouches[0].pageY;
-      this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
-      this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
-      this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
-      this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
+      this.pressedAt.x = this.position.x;
+      this.pressedAt.y = this.position.y;
       this.device = 2;
-      this.moveHandler(evt);
-      this.pressHandler(evt);        
+      this.pressHandler(evt);
     }
   }
 
 
   touchMoveHandler(evt){
     evt.preventDefault();
-    this.screenPosition.x = evt.changedTouches[0].pageX;
-    this.screenPosition.y = evt.changedTouches[0].pageY;
-    this.absPosition.x = evt.changedTouches[0].pageX-cardgameCanvas.rect.x;
-    this.absPosition.y = evt.changedTouches[0].pageY-cardgameCanvas.rect.y;
     this.position.x = (evt.changedTouches[0].pageX-cardgameCanvas.rect.x)/cardgameCanvas.scale;
     this.position.y = (evt.changedTouches[0].pageY-cardgameCanvas.rect.y)/cardgameCanvas.scale;
     this.device = 2;
-    if (this.touched && evt.changedTouches[0].identifier == this.touchId){
-      this.dragHandler(evt);
-      return;
-    }
     this.moveHandler();
   }
 
@@ -122,28 +99,40 @@ class Inputs{
 
   // HANDLERS
   moveHandler(evt){
+    if (this.pressed){
+      this.dragHandler(evt);
+      return;
+    }
     //first, check for items that arent hovered anymore
-    this.hovered.forEach((name)=>{  //if not hovered anymore...
+    let unhover = [];
+    scene.hovered.forEach((name)=>{  //if not hovered anymore...
       if (this.position.x < scene.items[name].target.box.tl.x || this.position.x > scene.items[name].target.box.br.x || this.position.y < scene.items[name].target.box.tl.y || this.position.y > scene.items[name].target.box.br.y){
-        this.unhovered.push(name);
+        unhover.push(name);
       }
     });
-    this.unhovered.forEach((name)=>{
+    unhover.forEach((name)=>{
       scene.items[name].actions.unhover(); //...run the .unhover() action of these items...
-      let idx = this.hovered.indexOf(name);
-      this.hovered.splice(idx, 1); //.. and delete them from the hovered-list
+      let idx = scene.hovered.indexOf(name);
+      scene.hovered.splice(idx, 1); //.. and delete them from the hovered-list
     });
-    this.unhovered = [];
     //next, check for newly hovered items
-    for (const[name, item] of Object.entries(scene.items)){
-      if (this.position.x >= item.target.box.tl.x && this.position.x <= item.target.box.br.x && this.position.y >= item.target.box.tl.y && this.position.y <= item.target.box.br.y){
-        if (!this.hovered.includes(name)){ //if this item isn't already marked as hovered...
-          this.hovered.push(name);         //... run the .hover() action
-          scene.items[name].actions.hover();
-        }
-      };
+    let l=scene.layers.length;
+    let hoverStop = false;
+    while (l>0 && hoverBubbling){      
+      scene.layers[l-1].forEach((name) =>{
+        if (scene.items[name].properties.hoverable && !(scene.hovered.length>0 && !scene.items[name].properties.hoverUnder) && this.position.x >= scene.items[name].target.box.tl.x && this.position.x <= scene.items[name].target.box.br.x && this.position.y >= scene.items[name].target.box.tl.y && this.position.y <= scene.items[name].target.box.br.y){
+          if (!scene.hovered.includes(name)){ //if this item isn't already marked as hovered...
+            scene.hovered.push(name);         //... run the .hover() action
+            scene.items[name].actions.hover();
+            if (!scene.items[name].properties.hoverThrough){
+              bubbling = false;
+            }
+          }
+        };
+      });
+      l--;
+      }
     }
-  }
 
 
   pressHandler(evt){
@@ -175,22 +164,22 @@ class Inputs{
 
   
   dragHandler(evt){
-    //DELETE: below just for testing
-    console.log('drag');
-    cardgameCanvas.ctx.lineTo(this.position.x, this.position.y);
-    cardgameCanvas.ctx.stroke();
-    //DELETE: above just for testing
-
-    this.dragOffset.assign(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
-    console.log(this.dragOffset);
-    this.dragged.forEach((name)=>{
-      scene.items[name].offset.assign(this.dragOffset.x, this.dragOffset.y);
-      if (!this.dragAlreadyStarted){
-        this.dragAlreadyStarted = true;
-        scene.items[name].actions.dragStart();
-      }
-      scene.items[name].actions.onDrag();
-    });
+    if (this.dragAlreadyStarted){
+      this.dragOffset.assign(this.position.x - this.pressedAt.x, this.position.y - this.pressedAt.y);
+      scene.dragged.forEach((name)=>{
+        scene.items[name].offset.assign(this.dragOffset.x, this.dragOffset.y);
+        if (!this.dragAlreadyStarted){
+          this.dragAlreadyStarted = true;
+          scene.items[name].actions.dragStart();
+        }
+        scene.items[name].actions.onDrag();
+      });
+      return;
+    } //else
+    if (Point2D.dist(this.position, this.pressedAt) > 10){
+      //TODO: dragstart
+      
+    } //else{do nothing}
   }
 
 

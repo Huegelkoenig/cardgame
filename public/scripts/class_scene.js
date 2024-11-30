@@ -5,17 +5,23 @@
 //...
 //Scene.switchTo('name');
 
-//this.layers =[layer_0, layer_1, ... ]  with this.layers[i] = {name_i_1: item_i_1,  name_i_2: item_i_2, ...};  layers[0] is at bottom
-//item_i_j = {asset: someAsset, target: {x: int, y: int, width: int, height: int}}, where someAsset = new Sprite, new Squircle, new Textitem, new Animation, etc
+//this.items is a collection of all items in the scene
+//this.items[name] = new Item(...)
 
-//this.itemsToLayer = {name_i_j: i, name_k_m: k, ...}  
+//this.layers describes the layer of an item by using their name 
+//this.layers =[layer_0, layer_1, ... ]
+//    with this.layers[0] at bottom and this.layers[i] = {name_i_1,  name_i_2, ...};
 
+//this.hovered, .pressed and .dragged is a list of all items that are currently pressed, dragged or hovered
 
 class Scene{
   constructor(){
     this.background = undefined;
     this.layers = [];
     this.items = {};
+    this.pressed = [];
+    this.dragged = [];
+    this.hovered = [];
     this.events = {start: ()=>{},
                    stop: ()=>{}};
     this.variables = {};
@@ -25,14 +31,13 @@ class Scene{
     if (scenes.hasOwnProperty(nextScene)){
       scene.events.stop();
       scene = scenes[nextScene];
-      inputs.hovered = [];
+      this.pressed = [];
+      this.dragged = [];
+      this.hovered = [];
       if (scene.background != undefined){
         backgroundCanvas.drawImage(scene.background, new Point2D(0,0), 1);
       }
       scene.events.start();
-      if (inputs.device == 1){ //mouse
-        inputs.moveHandler();
-      }
     }
   }
 

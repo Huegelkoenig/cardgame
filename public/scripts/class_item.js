@@ -38,15 +38,14 @@ class Item{
 
   constructor(asset, target, $_properties=[], $_actions={}){
     this.asset = asset;
-    this.properties = {centered: false,
+    this.properties = {centered: false, //TODO: implement "centered" items
+                       hoverable: false,
                        clickable: false,
-                       bubbleclick: false,
                        dragable:  false,
-                       bubbledrag: false,
                        hidden: false};
     $_properties.forEach( (p)=>{this.properties[p] = true;} );
     this.target = target;  //calls 'set target' (see above) (do this after setting the properties due to .setBox() checks, if .properties.centered==true)
-    this.actions = {hover: ()=>{}, unhover: ()=>{}, onClick: ()=>{}, dragStart: ()=>{}, onDrag: ()=>{}, dragEnd: ()=>{}}
+    this.actions = {hover: ()=>{}, unhover: ()=>{}, onClick: ()=>{}, dragStart: ()=>{}, onDrag: ()=>{}, dragEnd: ()=>{}, onDragOver: ()=>{}};
     for (const [key, value] of Object.entries($_actions)){
       this.actions[key] = value;
     }

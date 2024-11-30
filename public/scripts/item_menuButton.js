@@ -16,7 +16,7 @@ function menuButton(name, textOfButton, switchToScene, position){
                                                                     fillStyle: 'white'}
                               ),
                               position,
-                              ['clickable'],
+                              ['hoverable','clickable'],
                               {hover: ()=>{scene.items[name].asset.layers[0].color = 'rgba(0,0,255,0.7)';
                                            scene.items[name].asset.layers[1].color = 'rgba(245,155,66,0.7)';
                                            scene.items[name].asset.layers[2].color = 'rgba(255,255,255,0.7)'},

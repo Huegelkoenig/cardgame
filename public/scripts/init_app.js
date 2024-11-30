@@ -148,6 +148,9 @@ function defineScenes(){  //TODO: each class for assets has its own .draw method
   scenes.mainMenu.addItem('button_quickstart', menuButton('button_quickstart', 'Quickstart', 'quickstart', {layer: 0, x:850, y:100, width: 300, height: 200}));
   scenes.mainMenu.addItem('button_createGame', menuButton('button_createGame', 'Create Game', 'createGame', {layer: 0, x:850, y:350, width: 300, height: 200}));
   scenes.mainMenu.addItem('button_joinGame', menuButton('button_joinGame', 'Join Game', 'joinGame', {layer: 0, x:850, y:600, width: 300, height: 200}));
+  scenes.mainMenu.addItem('button_top', menuButton('button_top', 'Top', 'joinGame', {layer: 2, x:1200, y:400, width: 300, height: 200}));
+  scenes.mainMenu.addItem('button_middle', menuButton('button_middle', 'Middle', 'joinGame', {layer: 1, x:1300, y:500, width: 300, height: 200}));
+  scenes.mainMenu.addItem('button_bottom', menuButton('button_bottom', 'Bottom', 'joinGame', {layer: 0, x:1400, y:600, width: 300, height: 200}));
 //-----^^^ mainMenu ^^^--------------------------------------------------------------------
 
 
